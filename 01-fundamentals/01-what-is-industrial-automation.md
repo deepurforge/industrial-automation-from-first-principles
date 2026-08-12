@@ -1,5 +1,7 @@
 # What Is Industrial Automation?
 
+[🚀 Open Interactive Article 01](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/01-what-is-industrial-automation.html)
+
 > **DeepURForge Research Series — Article 01**
 > Foundations of Industrial Automation, built from first principles.
 
