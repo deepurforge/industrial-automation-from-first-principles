@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Did Industrial Automation Begin? — Interactive History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --bg-raise:#12151a;
+    --ink:#eeece6;
+    --ink-dim:#9b988f;
+    --ink-faint:#6b6a64;
+    --line:rgba(238,236,230,.10);
+    --line-strong:rgba(238,236,230,.20);
+
+    --mech:#b98a54;
+    --elec:#e6a531;
+    --electron:#4f9bd6;
+    --digital:#2fd6ae;
+    --smart:#8f7ae6;
+
+    --era: var(--mech);
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--era); color:#0b0d10; }
+
+  a{ color:inherit; }
+
+  /* ---------- top progress bar ---------- */
+  #progressBar{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:var(--era);
+    z-index:100;
+    transition:width .1s linear, background .4s ease;
+  }
+
+  /* ---------- side rail ---------- */
+  .rail{
+    position:fixed;
+    top:0; left:0; bottom:0;
+    width:76px;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center;
+    gap:6px;
+    z-index:90;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(11,13,16,.6), rgba(11,13,16,.9));
+    backdrop-filter:blur(6px);
+  }
+  .rail-item{
+    width:34px; height:34px;
+    border-radius:50%;
+    border:1px solid var(--line-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--ink-faint);
+    cursor:pointer;
+    background:transparent;
+    transition:all .25s ease;
+    position:relative;
+  }
+  .rail-item:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .rail-item.active{
+    color:var(--bg);
+    background:var(--dot, var(--era));
+    border-color:var(--dot, var(--era));
+    font-weight:600;
+    transform:scale(1.12);
+  }
+  .rail-line{
+    position:absolute; left:50%; top:100%;
+    width:1px; height:6px;
+    background:var(--line-strong);
+    transform:translateX(-50%);
+  }
+  .rail-item:last-child .rail-line{ display:none; }
+
+  @media (max-width: 860px){
+    .rail{ display:none; }
+  }
+
+  /* ---------- layout ---------- */
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 28px 140px 28px;
+  }
+  @media (min-width:861px){
+    main{ padding-left:96px; padding-right:40px; }
+  }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--dot, var(--era));
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:22px; height:1px;
+    background:var(--dot, var(--era));
+    display:inline-block;
+  }
+
+  h1,h2,h3{
+    font-family:var(--font-display);
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin:0 0 .5em 0;
+  }
+  h2{ font-size:clamp(26px,3.4vw,36px); }
+  p{ color:#d7d5cd; margin:0 0 1em 0; }
+  .lede{ color:var(--ink-dim); font-size:17px; }
+
+  .divider{
+    height:1px; background:var(--line);
+    margin:96px 0 64px 0;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:92vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:120px 0 60px 0;
+    position:relative;
+  }
+  .hero .kicker{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:clamp(34px,6vw,64px);
+    line-height:1.05;
+    max-width:820px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    background:linear-gradient(90deg,var(--mech),var(--elec),var(--electron),var(--digital),var(--smart));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero .sub{
+    max-width:560px;
+    color:var(--ink-dim);
+    font-size:18px;
+    margin-top:20px;
+  }
+
+  /* feedback loop signature animation */
+  .loop-wrap{
+    margin-top:56px;
+    display:flex; align-items:center; gap:40px;
+    flex-wrap:wrap;
+  }
+  .loop-svg{ width:220px; height:220px; flex-shrink:0; }
+  .loop-caption{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--ink-dim);
+    max-width:300px;
+    line-height:1.7;
+  }
+  .loop-caption b{ color:var(--ink); }
+  .loop-node-label{
+    font-family:var(--font-mono);
+    font-size:9px;
+    fill:var(--ink-dim);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .loop-track{ fill:none; stroke:var(--line-strong); stroke-width:1.5; }
+  .loop-node{ fill:var(--bg-raise); stroke:var(--line-strong); stroke-width:1.5; }
+  .loop-node.on{ stroke:var(--electron); }
+  .loop-dot{ fill:var(--electron); filter:drop-shadow(0 0 6px var(--electron)); }
+
+  @keyframes cncMove{ 0%{ offset-distance:0%; } 100%{ offset-distance:100%; } }
+  .cnc-drawn{ animation:cncDraw 4s linear infinite; }
+  @keyframes cncDraw{ 0%{ stroke-dashoffset:500; } 90%,100%{ stroke-dashoffset:0; } }
+
+  @keyframes rungFlow{ 0%,8%{ offset-distance:0%; opacity:0; } 12%{ opacity:1; } 45%,100%{ offset-distance:100%; opacity:1; } }
+  #rungCoil{ transition:all .3s ease; }
+  .panel.in #rungCoil{ animation:coilGlow 2.6s ease-in-out infinite; }
+  @keyframes coilGlow{ 0%,40%{ stroke:var(--ink-dim); filter:none; } 50%,90%{ stroke:var(--digital); filter:drop-shadow(0 0 6px var(--digital)); } 100%{ stroke:var(--ink-dim); filter:none; } }
+  .rung-contact line{ transition:stroke .3s ease; }
+
+  /* tube/transistor scope traces */
+  .scope-wrap{ display:flex; flex-direction:column; gap:16px; margin-top:6px; }
+  .scope-row{ display:grid; grid-template-columns:90px 1fr; gap:14px; align-items:center; }
+  .scope-tag{ font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; color:var(--ink-faint); }
+  .scope-svg{ width:100%; height:42px; background:var(--bg); border:1px solid var(--line); border-radius:4px; }
+  .scope-note{ grid-column:2; font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); margin-top:-8px; }
+  .tube-trace{ stroke-dasharray:900; stroke-dashoffset:900; animation:scopeDraw 3.4s linear infinite; }
+  .trans-trace{ stroke-dasharray:900; stroke-dashoffset:900; animation:scopeDraw 3.4s linear infinite; }
+  @keyframes scopeDraw{ 0%{ stroke-dashoffset:900; } 70%,100%{ stroke-dashoffset:0; } }
+  .tube-filament{ animation:filamentGlow 2s ease-in-out infinite; }
+  @keyframes filamentGlow{ 0%,100%{ opacity:.3; } 50%{ opacity:1; fill:var(--elec); } }
+
+  /* fieldbus wiring comparison */
+  .wiring-compare{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:6px; }
+  .wiring-col svg{ width:100%; height:auto; }
+  .wiring-mess line{ stroke:var(--ink-faint); stroke-width:1; }
+  .wiring-tag{ font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); text-align:center; margin-top:6px; }
+
+  /* industry 4.0 net tags */
+  .net-wrap{ position:relative; }
+  .net-tag{
+    position:absolute; font-family:var(--font-mono); font-size:10px; letter-spacing:.08em;
+    padding:4px 10px; border:1px solid var(--line-strong); border-radius:999px;
+    color:var(--ink-dim); background:rgba(11,13,16,.7); backdrop-filter:blur(4px);
+  }
+  .net-tag-edge{ top:14px; left:14px; }
+  .net-tag-cloud{ bottom:14px; right:14px; color:var(--smart); border-color:var(--smart); }
+
+  .scroll-cue{
+    margin-top:64px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    display:flex; align-items:center; gap:10px;
+  }
+  .scroll-cue .bar{
+    width:1px; height:28px; background:var(--ink-faint);
+    position:relative; overflow:hidden;
+  }
+  .scroll-cue .bar::after{
+    content:''; position:absolute; left:0; top:-100%;
+    width:100%; height:100%; background:var(--ink);
+    animation:cue 1.6s ease-in-out infinite;
+  }
+  @keyframes cue{ 50%{ top:100%; } 100%{ top:100%; } }
+
+  /* ---------- era section ---------- */
+  .era{
+    padding-top:8px;
+    scroll-margin-top:40px;
+  }
+  .era .index{
+    font-family:var(--font-mono);
+    font-size:64px;
+    font-weight:600;
+    color:transparent;
+    -webkit-text-stroke:1px var(--line-strong);
+    line-height:1;
+    margin-bottom:8px;
+  }
+
+  .panel{
+    margin:32px 0 8px 0;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.03), transparent 60%), var(--bg-raise);
+    padding:28px;
+    overflow:hidden;
+    opacity:0; transform:translateY(16px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .panel.in{ opacity:1; transform:translateY(0); }
+  .panel-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:18px;
+  }
+
+  .key-points{ list-style:none; padding:0; margin:20px 0; }
+  .key-points li{
+    position:relative; padding-left:22px; margin-bottom:10px;
+    color:#d7d5cd; font-size:15px;
+  }
+  .key-points li::before{
+    content:''; position:absolute; left:0; top:9px;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--dot, var(--era));
+  }
+
+  .callout{
+    border-left:2px solid var(--dot, var(--era));
+    padding:4px 0 4px 18px;
+    margin:22px 0;
+    color:var(--ink-dim);
+    font-size:15px;
+    font-style:normal;
+  }
+  .callout b{ color:var(--ink); }
+
+  figure{ margin:0; }
+  figcaption{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:10px;
+    line-height:1.6;
+  }
+  figcaption a{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; }
+  img.photo{
+    width:100%; border-radius:10px; display:block;
+    filter:grayscale(.15) contrast(1.03);
+    border:1px solid var(--line);
+  }
+
+  /* ---------- Section 1: human loop ---------- */
+  .human-loop{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+  }
+  .human-step{
+    text-align:center; padding:18px 8px;
+    border:1px solid var(--line); border-radius:10px;
+    opacity:.35; transition:all .4s ease;
+  }
+  .human-step .glyph{ font-size:26px; margin-bottom:10px; }
+  .human-step .lbl{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim); }
+  .human-step.active{ opacity:1; border-color:var(--dot,var(--era)); box-shadow:0 0 24px -8px var(--dot,var(--era)); }
+  @media (max-width:560px){ .human-loop{ grid-template-columns:repeat(2,1fr); } }
+
+  /* ---------- Section 2: steam engine ---------- */
+  .steam-rig{ width:100%; height:180px; }
+  .steam-piston{ animation:pistonMove 1.8s ease-in-out infinite; transform-origin:center; }
+  @keyframes pistonMove{ 0%,100%{ transform:translateX(0);} 50%{ transform:translateX(34px);} }
+  .steam-wheel{ transform-origin:60px 130px; animation:spin 1.8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .steam-rod{ transform-origin:60px 130px; }
+  .steam-smoke circle{ animation:smokeRise 3s ease-in infinite; }
+  .steam-smoke circle:nth-child(2){ animation-delay:1s; }
+  .steam-smoke circle:nth-child(3){ animation-delay:2s; }
+  @keyframes smokeRise{ 0%{ opacity:0; transform:translateY(0) scale(.6);} 20%{opacity:.5;} 100%{ opacity:0; transform:translateY(-60px) scale(1.4);} }
+
+  /* ---------- Section 3: governor simulator ---------- */
+  .governor-sim{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; align-items:center; }
+  @media (max-width:860px){ .governor-sim{ grid-template-columns:1fr 1fr; } .governor-sim .gov-controls{ grid-column:1 / -1; } }
+  @media (max-width:520px){ .governor-sim{ grid-template-columns:1fr; } .governor-sim .gov-controls{ grid-column:auto; } }
+  .gov-controls{ display:flex; flex-direction:column; gap:14px; }
+  .gov-controls label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim); }
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:3px; border-radius:2px;
+    background:var(--line-strong); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--electron); cursor:pointer; box-shadow:0 0 10px var(--electron);
+  }
+  .gov-readout{
+    font-family:var(--font-mono); font-size:13px; color:var(--ink);
+    display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:12px;
+  }
+  .gov-readout span:last-child{ color:var(--electron); }
+  .gov-flyball{ transition:transform .15s ease-out; }
+  .gov-arm{ transition:transform .15s ease-out; }
+  .gov-valve{ transition:transform .15s ease-out; }
+  .gov-needle{ transform-origin:100px 100px; transition:transform .15s ease-out; }
+
+  /* ---------- Section 4: jacquard ---------- */
+  .jacquard-wrap{ overflow:hidden; }
+  .jacquard-card{ animation:cardFeed 4s linear infinite; }
+  @keyframes cardFeed{ 0%{ transform:translateX(220px);} 100%{ transform:translateX(-220px);} }
+  .jacquard-hole{ animation:holeGlow 4s linear infinite; }
+  .thread-row rect{ animation:threadFill 4s linear infinite; opacity:0; }
+  @keyframes holeGlow{ 0%,45%{ fill:#2a2d33;} 48%,60%{ fill:var(--dot,var(--mech)); } 65%,100%{ fill:#2a2d33;} }
+  @keyframes threadFill{ 0%,55%{ opacity:0;} 60%,100%{ opacity:1;} }
+
+  /* ---------- Section 5: electrification ---------- */
+  .motor-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .motor-cell{ text-align:center; padding:16px 6px; border:1px solid var(--line); border-radius:10px; }
+  .motor-cell .disc{
+    width:34px; height:34px; margin:0 auto 10px auto; border-radius:50%;
+    border:2px solid var(--line-strong);
+    animation:motorSpin 1.2s linear infinite;
+    border-top-color:var(--dot,var(--elec));
+  }
+  .motor-cell:nth-child(2) .disc{ animation-delay:.2s; }
+  .motor-cell:nth-child(3) .disc{ animation-delay:.4s; }
+  .motor-cell:nth-child(4) .disc{ animation-delay:.6s; }
+  @keyframes motorSpin{ to{ transform:rotate(360deg);} }
+  .motor-cell .lbl{ font-family:var(--font-mono); font-size:10px; color:var(--ink-dim); text-transform:uppercase; }
+
+  /* ---------- Section 6: tube -> transistor ---------- */
+  .morph-wrap{ display:flex; align-items:center; justify-content:center; gap:32px; padding:20px 0; }
+  .tube-shape{ animation:tubePulse 3.4s ease-in-out infinite; }
+  .transistor-shape{ animation:transPulse 3.4s ease-in-out infinite; }
+  @keyframes tubePulse{ 0%,40%{ opacity:1; transform:scale(1);} 50%,100%{ opacity:.15; transform:scale(.9);} }
+  @keyframes transPulse{ 0%,40%{ opacity:.15; transform:scale(.7);} 50%,100%{ opacity:1; transform:scale(1);} }
+  .morph-arrow{ font-family:var(--font-mono); color:var(--ink-faint); font-size:22px; }
+
+  /* ---------- Section 7: process computer ---------- */
+  .term-screen{
+    background:#04120d; border:1px solid var(--line-strong); border-radius:8px;
+    padding:16px; font-family:var(--font-mono); font-size:12px; color:var(--digital);
+    height:120px; overflow:hidden; position:relative;
+  }
+  .term-line{ white-space:nowrap; opacity:0; animation:typeLine .6s forwards; }
+  .term-line:nth-child(1){ animation-delay:.2s; }
+  .term-line:nth-child(2){ animation-delay:1.1s; }
+  .term-line:nth-child(3){ animation-delay:2s; }
+  .term-line:nth-child(4){ animation-delay:2.9s; }
+  @keyframes typeLine{ to{ opacity:1;} }
+  .cursor{ display:inline-block; width:7px; height:12px; background:var(--digital); animation:blink 1s step-end infinite; vertical-align:middle; }
+  @keyframes blink{ 50%{ opacity:0;} }
+
+  /* ---------- Section 8: relay -> PLC toggle ---------- */
+  .plc-toggle-wrap{ text-align:center; }
+  .plc-toggle-btn{
+    font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    background:transparent; border:1px solid var(--line-strong); color:var(--ink);
+    padding:10px 18px; border-radius:999px; cursor:pointer; margin-bottom:22px;
+    transition:all .25s ease;
+  }
+  .plc-toggle-btn:hover{ border-color:var(--digital); color:var(--digital); }
+  .relay-mess line{ transition:opacity .5s ease; }
+  .plc-box{ transition:opacity .5s ease, transform .5s ease; }
+  .state-before .plc-box{ opacity:0; transform:scale(.9); }
+  .state-before .relay-mess{ opacity:1; }
+  .state-after .plc-box{ opacity:1; transform:scale(1); }
+  .state-after .relay-mess{ opacity:0; }
+  .state-label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint); text-align:center; margin-top:10px; }
+
+  /* ---------- Section 9: stack build ---------- */
+  .stack-build{ display:flex; flex-direction:column-reverse; gap:8px; }
+  .stack-row{
+    padding:12px 16px; border:1px solid var(--line); border-radius:8px;
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-dim);
+    opacity:0; transform:translateY(10px);
+  }
+  .panel.in .stack-row{ animation:stackIn .5s forwards; }
+  .stack-row:nth-child(1){ animation-delay:.1s; }
+  .stack-row:nth-child(2){ animation-delay:.35s; }
+  .stack-row:nth-child(3){ animation-delay:.6s; }
+  .stack-row:nth-child(4){ animation-delay:.85s; }
+  @keyframes stackIn{ to{ opacity:1; transform:translateY(0);} }
+
+  /* ---------- Section 10: DCS nodes ---------- */
+  .dcs-pulse{ animation:dcsMove 3s linear infinite; offset-rotate:0deg; }
+  .dcs-path{ fill:none; stroke:var(--line-strong); stroke-width:1.2; }
+  @keyframes dcsMove{ 0%{ offset-distance:0%;} 100%{ offset-distance:100%;} }
+
+  /* ---------- Section 11: SCADA dashboard ---------- */
+  .scada-panel{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .scada-tile{ border:1px solid var(--line); border-radius:8px; padding:14px; }
+  .scada-tile .lbl{ font-family:var(--font-mono); font-size:9px; color:var(--ink-faint); text-transform:uppercase; margin-bottom:10px; }
+  .scada-bar{ height:5px; background:var(--line-strong); border-radius:3px; overflow:hidden; }
+  .scada-bar span{ display:block; height:100%; background:var(--dot,var(--digital)); animation:barPulse 2.6s ease-in-out infinite; }
+  .scada-tile:nth-child(2) .scada-bar span{ animation-delay:.3s; }
+  .scada-tile:nth-child(3) .scada-bar span{ animation-delay:.6s; }
+  @keyframes barPulse{ 0%,100%{ width:30%;} 50%{ width:82%;} }
+  .scada-dot{ width:7px; height:7px; border-radius:50%; background:var(--digital); display:inline-block; margin-top:10px; animation:dotBlink 1.4s ease-in-out infinite; box-shadow:0 0 8px var(--digital); }
+
+  .alarm-log{
+    background:#04120d; border:1px solid var(--line-strong); border-radius:8px;
+    padding:12px 14px; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim);
+    height:110px; overflow:hidden; display:flex; flex-direction:column-reverse; gap:6px;
+  }
+  .alarm-row{ display:flex; gap:10px; opacity:0; animation:alarmIn .4s forwards; white-space:nowrap; }
+  .alarm-row .t{ color:var(--ink-faint); }
+  .alarm-row.warn .lvl{ color:var(--elec); }
+  .alarm-row.ok .lvl{ color:var(--digital); }
+  .alarm-row.crit .lvl{ color:#ff6b6b; }
+  @keyframes alarmIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+
+  /* ---------- Section 12: fieldbus ---------- */
+  .fieldbus-pulse{ animation:fbMove 2.6s linear infinite; }
+  @keyframes fbMove{ 0%{ offset-distance:0%; opacity:0;} 5%{opacity:1;} 95%{opacity:1;} 100%{ offset-distance:100%; opacity:0;} }
+
+  /* ---------- Section 13: ethernet layers ---------- */
+  .layer-stack{ display:flex; flex-direction:column; gap:6px; }
+  .layer-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; border:1px solid var(--line); border-radius:6px;
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-dim);
+    position:relative;
+  }
+  .layer-packet{
+    position:absolute; right:14px; width:8px; height:8px; border-radius:50%;
+    background:var(--digital); box-shadow:0 0 8px var(--digital);
+    animation:packetUp 3.5s ease-in-out infinite;
+  }
+  @keyframes packetUp{
+    0%{ top:100%; opacity:0; }
+    8%{ opacity:1; }
+    92%{ opacity:1; }
+    100%{ top:-8px; opacity:0; }
+  }
+
+  /* ---------- Section 14: industry 4.0 network ---------- */
+  .net-canvas{ width:100%; height:220px; display:block; border-radius:10px; background:radial-gradient(circle at 30% 20%, rgba(143,122,230,.08), transparent 60%); }
+
+  /* ---------- Section 15: automation today recap ---------- */
+  .recap-bars{ display:flex; align-items:flex-end; gap:6px; height:120px; }
+  .recap-bar{ flex:1; border-radius:4px 4px 0 0; opacity:0; transform:scaleY(0); transform-origin:bottom; }
+  .panel.in .recap-bar{ animation:barGrow .8s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes barGrow{ to{ opacity:1; transform:scaleY(1);} }
+
+  /* ---------- table ---------- */
+  table{ width:100%; border-collapse:collapse; font-size:14px; margin:20px 0; }
+  th,td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); font-weight:500; }
+  td{ color:#d7d5cd; }
+
+  /* ---------- master timeline ---------- */
+  .timeline-wrap{ position:relative; padding:20px 0 10px 0; }
+  .timeline-track{
+    position:absolute; left:0; top:34px; height:2px; width:100%;
+    background:var(--line-strong);
+  }
+  .timeline-fill{
+    position:absolute; left:0; top:34px; height:2px; width:0%;
+    background:linear-gradient(90deg,var(--mech),var(--elec),var(--electron),var(--digital),var(--smart));
+    transition:width 1.4s cubic-bezier(.2,.8,.2,1);
+  }
+  .timeline-items{ display:flex; justify-content:space-between; position:relative; }
+  .timeline-item{ display:flex; flex-direction:column; align-items:center; width:70px; opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease; }
+  .panel.in .timeline-item{ opacity:1; transform:translateY(0); }
+  .timeline-item:nth-child(1){ transition-delay:.05s; }
+  .timeline-item:nth-child(2){ transition-delay:.15s; }
+  .timeline-item:nth-child(3){ transition-delay:.25s; }
+  .timeline-item:nth-child(4){ transition-delay:.35s; }
+  .timeline-item:nth-child(5){ transition-delay:.45s; }
+  .timeline-item:nth-child(6){ transition-delay:.55s; }
+  .timeline-item:nth-child(7){ transition-delay:.65s; }
+  .timeline-dot{ width:10px; height:10px; border-radius:50%; background:var(--bg); border:2px solid var(--ink-dim); margin-bottom:10px; z-index:2; }
+  .timeline-year{ font-family:var(--font-mono); font-size:10px; color:var(--ink); margin-bottom:4px; }
+  .timeline-label{ font-family:var(--font-mono); font-size:9px; color:var(--ink-faint); text-align:center; line-height:1.4; }
+  @media (max-width:700px){ .timeline-items{ flex-wrap:wrap; gap:22px 8px; justify-content:flex-start;} .timeline-track,.timeline-fill{ display:none; } .timeline-item{ width:90px; } }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:100px; padding-top:40px; border-top:1px solid var(--line);
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); line-height:2;
+  }
+  footer a{ color:var(--ink-dim); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progressBar"></div>
+
+<nav class="rail" id="rail" aria-label="Chapter navigation"></nav>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="top">
+    <div class="kicker">DeepURForge — 02 · History</div>
+    <h1>Where did <em>industrial automation</em> begin?</h1>
+    <p class="sub">Not with PLCs, robots, or computers. It evolved step by step — through mechanical machines, feedback, electrical control, electronics, and finally computing and networked intelligence. Scroll through 250 years of that evolution, animated.</p>
+
+    <div class="loop-wrap">
+      <svg class="loop-svg" viewBox="0 0 200 200">
+        <path class="loop-track" d="M100,30 A70,70 0 1,1 99,30" />
+        <g id="loopDot"><circle class="loop-dot" r="5" /></g>
+        <g>
+          <circle class="loop-node on" cx="100" cy="30" r="20"/>
+          <text class="loop-node-label" x="100" y="34" text-anchor="middle">Measure</text>
+        </g>
+        <g>
+          <circle class="loop-node" cx="170" cy="100" r="20"/>
+          <text class="loop-node-label" x="170" y="104" text-anchor="middle">Compare</text>
+        </g>
+        <g>
+          <circle class="loop-node" cx="100" cy="170" r="20"/>
+          <text class="loop-node-label" x="100" y="174" text-anchor="middle">Correct</text>
+        </g>
+        <g>
+          <circle class="loop-node" cx="30" cy="100" r="20"/>
+          <text class="loop-node-label" x="30" y="104" text-anchor="middle">Repeat</text>
+        </g>
+      </svg>
+      <div class="loop-caption">
+        <b>Every technology on this timeline is a variation on one loop.</b><br>
+        Measure → compare → correct → measure again. James Watt built it from brass in 1788. A modern PLC runs the same loop in software, ten thousand times a second.
+      </div>
+    </div>
+
+    <div class="scroll-cue"><div class="bar"></div>Scroll to explore</div>
+  </header>
+
+  <!-- ============ 1. HUMAN CONTROL ============ -->
+  <section class="era" id="s1" data-era="mech" data-title="Human Control">
+    <div class="index">01</div>
+    <div class="eyebrow">1760s and earlier</div>
+    <h2>Before automation, humans controlled everything</h2>
+    <p class="lede">A worker watched a process, judged its state, and physically intervened to correct it. That four-step loop is the thing every later technology tries to speed up, tighten, and eventually remove the human from.</p>
+
+    <div class="panel" data-animate="human">
+      <div class="panel-label">Animation — the manual control loop, on repeat</div>
+      <div class="human-loop">
+        <div class="human-step" data-step="0"><div class="glyph">👁</div><div class="lbl">Observe</div></div>
+        <div class="human-step" data-step="1"><div class="glyph">🧠</div><div class="lbl">Decide</div></div>
+        <div class="human-step" data-step="2"><div class="glyph">✋</div><div class="lbl">Act</div></div>
+        <div class="human-step" data-step="3"><div class="glyph">✓</div><div class="lbl">Check</div></div>
+      </div>
+      <ul class="key-points">
+        <li>Manual work and human effort powered and controlled every process.</li>
+        <li>Limitations: fatigue, inconsistency, slow response, human error.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 2. MECHANIZATION ============ -->
+  <section class="era" id="s2" data-era="mech" data-title="Mechanization">
+    <div class="index">02</div>
+    <div class="eyebrow">1760s–1800s · First Industrial Revolution</div>
+    <h2>Mechanization — muscle gets replaced first</h2>
+    <p class="lede">Water and steam power replaced human and animal muscle. Industry 1.0. But control was still entirely manual — mechanization replaces effort, not judgment.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — a steam engine in continuous motion</div>
+      <svg class="steam-rig" viewBox="0 0 260 180">
+        <g class="steam-smoke">
+          <circle cx="210" cy="60" r="6" fill="var(--ink-faint)" />
+          <circle cx="210" cy="60" r="6" fill="var(--ink-faint)" />
+          <circle cx="210" cy="60" r="6" fill="var(--ink-faint)" />
+        </g>
+        <rect x="190" y="40" width="18" height="30" fill="none" stroke="var(--line-strong)" />
+        <rect x="20" y="105" width="70" height="26" rx="3" fill="none" stroke="var(--line-strong)" />
+        <g class="steam-piston">
+          <rect x="30" y="112" width="12" height="12" fill="var(--dot,var(--mech))" />
+        </g>
+        <line class="steam-rod" x1="36" y1="118" x2="60" y2="130" stroke="var(--line-strong)" stroke-width="2" />
+        <circle class="steam-wheel" cx="60" cy="130" r="30" fill="none" stroke="var(--line-strong)" stroke-width="2" />
+        <line class="steam-wheel" x1="60" y1="130" x2="60" y2="100" stroke="var(--dot,var(--mech))" stroke-width="2" />
+        <line class="steam-wheel" x1="60" y1="130" x2="88" y2="130" stroke="var(--line-strong)" stroke-width="1" />
+      </svg>
+      <ul class="key-points">
+        <li>Steam power replaced muscle as the primary energy source.</li>
+        <li>Factories concentrated production around one shared power source.</li>
+      </ul>
+      <div class="callout"><b>Important distinction:</b> mechanization replaced muscle. A human was still the controller — pulling levers, watching gauges. Automation, which replaces judgment, comes next.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 3. WATT'S GOVERNOR (interactive) ============ -->
+  <section class="era" id="s3" data-era="mech" data-title="Watt's Governor">
+    <div class="index">03</div>
+    <div class="eyebrow">1788 · The beginning of automatic control</div>
+    <h2>Feedback: the single most important idea in this history</h2>
+    <p class="lede">James Watt adapted the centrifugal governor to his steam engine in 1788. As speed rises, spinning flyballs fly outward under centrifugal force; that motion pulls a linkage that closes the steam valve, slowing the engine back down — with no person involved. Try it below.</p>
+    <p>The mechanism has exactly three moving parts: a pair of weighted arms hinged to a spinning shaft, a sliding collar the arms push against, and a linkage from that collar to the steam valve. Faster shaft → wider arm swing → collar rises → valve closes → less steam → shaft slows → arms fall back in. The engine never settles perfectly still; it "hunts" in a tight band around its target speed, correcting itself forever.</p>
+
+    <div class="panel">
+      <div class="panel-label">Interactive — drag to change engine speed, watch the governor respond</div>
+      <div class="governor-sim">
+        <svg viewBox="0 0 200 200" style="width:100%; height:auto;">
+          <line x1="100" y1="40" x2="100" y2="70" stroke="var(--line-strong)" stroke-width="2" />
+          <g id="govLeft" class="gov-arm">
+            <line x1="100" y1="70" x2="70" y2="100" stroke="var(--line-strong)" stroke-width="2" />
+            <circle id="govBallLeft" class="gov-flyball" cx="70" cy="100" r="9" fill="var(--dot,var(--mech))" />
+          </g>
+          <g id="govRight" class="gov-arm">
+            <line x1="100" y1="70" x2="130" y2="100" stroke="var(--line-strong)" stroke-width="2" />
+            <circle id="govBallRight" class="gov-flyball" cx="130" cy="100" r="9" fill="var(--dot,var(--mech))" />
+          </g>
+          <line x1="100" y1="70" x2="100" y2="120" stroke="var(--line-strong)" stroke-width="2" />
+          <rect x="88" y="120" width="24" height="10" fill="none" stroke="var(--line-strong)" />
+          <rect id="govValve" class="gov-valve" x="90" y="122" width="20" height="6" fill="var(--dot,var(--electron))" />
+          <text x="100" y="150" text-anchor="middle" class="loop-node-label" style="font-size:9px;">STEAM VALVE</text>
+        </svg>
+
+        <div>
+          <svg viewBox="0 0 200 120" style="width:100%; height:auto;">
+            <path d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="var(--line-strong)" stroke-width="6" stroke-linecap="round"/>
+            <path id="govGaugeArc" d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="var(--electron)" stroke-width="6" stroke-linecap="round"
+                  stroke-dasharray="251" stroke-dashoffset="188" />
+            <line id="govNeedle" class="gov-needle" x1="100" y1="100" x2="100" y2="34" stroke="var(--ink)" stroke-width="2.5" />
+            <circle cx="100" cy="100" r="5" fill="var(--ink)" />
+            <text x="100" y="115" text-anchor="middle" class="loop-node-label">ENGINE SPEED</text>
+          </svg>
+        </div>
+
+        <div class="gov-controls">
+          <label for="govSlider">Engine speed</label>
+          <input type="range" id="govSlider" min="0" max="100" value="35">
+          <div class="gov-readout"><span>RPM</span><span id="govRpmOut">350</span></div>
+          <div class="gov-readout"><span>Flyball angle</span><span id="govAngleOut">18°</span></div>
+          <div class="gov-readout"><span>Valve opening</span><span id="govValveOut">72%</span></div>
+          <p style="font-size:13px; color:var(--ink-dim); margin-top:6px;">Push speed up — the valve closes automatically to slow the engine back down. That correction, with zero human input, is <b>feedback</b>.</p>
+        </div>
+      </div>
+      <div class="callout">The same loop lives inside every PID controller, PLC control block, and SCADA alarm limit covered later in this repository: <b>measure → compare → correct → measure again.</b></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 4. JACQUARD LOOM ============ -->
+  <section class="era" id="s4" data-era="mech" data-title="Jacquard Loom">
+    <div class="index">04</div>
+    <div class="eyebrow">1801 · Machines begin following instructions</div>
+    <h2>The Jacquard loom — programmability is born</h2>
+    <p class="lede">Chained punched cards told the loom which threads to raise for each pass. The loom followed a stored, repeatable sequence — the direct ancestor of every "program → controller → output" system since.</p>
+
+    <div class="panel jacquard-wrap">
+      <div class="panel-label">Animation — punched card feeding through the reader</div>
+      <svg viewBox="0 0 300 140" style="width:100%; height:auto;">
+        <line x1="0" y1="70" x2="300" y2="70" stroke="var(--line-strong)" stroke-dasharray="2 4" />
+        <rect x="130" y="45" width="40" height="50" fill="none" stroke="var(--dot,var(--mech))" stroke-width="1.5" />
+        <g class="jacquard-card">
+          <rect x="0" y="55" width="60" height="30" rx="2" fill="#171a1f" stroke="var(--line-strong)" />
+          <circle class="jacquard-hole" cx="12" cy="63" r="3" fill="#2a2d33" />
+          <circle class="jacquard-hole" cx="24" cy="77" r="3" fill="#2a2d33" />
+          <circle class="jacquard-hole" cx="36" cy="63" r="3" fill="#2a2d33" />
+          <circle class="jacquard-hole" cx="48" cy="77" r="3" fill="#2a2d33" />
+        </g>
+        <g class="thread-row">
+          <rect x="132" y="105" width="6" height="20" fill="var(--dot,var(--mech))" />
+          <rect x="142" y="110" width="6" height="15" fill="var(--dot,var(--mech))" />
+          <rect x="152" y="100" width="6" height="25" fill="var(--dot,var(--mech))" />
+          <rect x="162" y="112" width="6" height="13" fill="var(--dot,var(--mech))" />
+        </g>
+      </svg>
+      <ul class="key-points">
+        <li>Joseph Marie Jacquard demonstrated his loom in Lyon, France, in 1801.</li>
+        <li>Punched cards → mechanical selection → pattern, repeatably, without a weaver's constant judgment.</li>
+      </ul>
+      <div class="callout">Program → controller → output. Punched cards later inspired Babbage's Analytical Engine — a direct line runs from this 1801 loom to the paper tape that programmed early PLCs 170 years later.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 5. ELECTRIFICATION ============ -->
+  <section class="era" id="s5" data-era="elec" data-title="Electrification">
+    <div class="index">05</div>
+    <div class="eyebrow">1870s onward · Second Industrial Revolution</div>
+    <h2>Electrification — power goes where the process needs it</h2>
+    <p class="lede">Electric motors let power be placed exactly where a process needed it, instead of one steam engine driving everything through belts and shafts. Industry 2.0.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — power distributed across independent motors</div>
+      <div class="motor-grid">
+        <div class="motor-cell"><div class="disc"></div><div class="lbl">Motor A</div></div>
+        <div class="motor-cell"><div class="disc"></div><div class="lbl">Motor B</div></div>
+        <div class="motor-cell"><div class="disc"></div><div class="lbl">Motor C</div></div>
+        <div class="motor-cell"><div class="disc"></div><div class="lbl">Motor D</div></div>
+      </div>
+      <ul class="key-points">
+        <li>Electrified factories let machine layout follow process logic, not proximity to a boiler.</li>
+        <li>Assembly-line production became achievable at real industrial scale.</li>
+        <li>Electrical signals could travel instantly over wires, and be switched — opening the door to electrical control.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 6. ELECTRONIC CONTROL ============ -->
+  <section class="era" id="s6" data-era="electron" data-title="Electronic Control">
+    <div class="index">06</div>
+    <div class="eyebrow">1947 · From pneumatic/mechanical to electronic</div>
+    <h2>The transistor changes everything downstream</h2>
+    <p class="lede">Pneumatic and electromechanical control had physical limits. The transistor — small, reliable, solid-state — is the single component that made every digital controller after it physically possible.</p>
+    <p>A vacuum tube amplifies or switches current by heating a filament until it boils electrons off a cathode, inside a fragile glass envelope that needs seconds to warm up and constantly drains power as heat. A transistor does the same job by shifting current through a sliver of doped silicon or germanium — no filament, no glass, no warm-up, and a fraction of the power draw. That difference alone is why every control system after 1947 got smaller, cooler, and faster in the same breath.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — vacuum tube gives way to the transistor</div>
+      <div class="morph-wrap">
+        <svg class="tube-shape" width="70" height="100" viewBox="0 0 70 100">
+          <ellipse cx="35" cy="20" rx="25" ry="16" fill="none" stroke="var(--ink-faint)" stroke-width="2"/>
+          <rect x="10" y="20" width="50" height="60" rx="8" fill="none" stroke="var(--ink-faint)" stroke-width="2"/>
+          <line x1="35" y1="80" x2="35" y2="96" stroke="var(--ink-faint)" stroke-width="2"/>
+          <circle class="tube-filament" cx="35" cy="50" r="3" fill="var(--ink-faint)"/>
+          <text x="35" y="112" text-anchor="middle" class="loop-node-label">VACUUM TUBE, ~1904</text>
+        </svg>
+        <div class="morph-arrow">→</div>
+        <svg class="transistor-shape" width="50" height="100" viewBox="0 0 50 100">
+          <rect x="10" y="10" width="30" height="30" rx="4" fill="none" stroke="var(--dot,var(--electron))" stroke-width="2"/>
+          <line x1="18" y1="40" x2="18" y2="60" stroke="var(--dot,var(--electron))" stroke-width="2"/>
+          <line x1="25" y1="40" x2="25" y2="70" stroke="var(--dot,var(--electron))" stroke-width="2"/>
+          <line x1="32" y1="40" x2="32" y2="60" stroke="var(--dot,var(--electron))" stroke-width="2"/>
+          <text x="25" y="112" text-anchor="middle" class="loop-node-label">TRANSISTOR, 1947</text>
+        </svg>
+      </div>
+
+      <div class="panel-label" style="margin-top:28px;">Animation — same switching signal, two technologies</div>
+      <div class="scope-wrap">
+        <div class="scope-row">
+          <div class="scope-tag">TUBE</div>
+          <svg class="scope-svg" viewBox="0 0 260 50" preserveAspectRatio="none">
+            <polyline class="scope-trace tube-trace" fill="none" stroke="var(--ink-faint)" stroke-width="2"
+              points="0,40 20,40 26,10 60,10 68,40 100,40 108,8 145,8 155,40 190,40 200,9 235,9 244,40 260,40" />
+          </svg>
+          <div class="scope-note">slow rise, warm-up lag, drifts with heat</div>
+        </div>
+        <div class="scope-row">
+          <div class="scope-tag" style="color:var(--electron);">TRANSISTOR</div>
+          <svg class="scope-svg" viewBox="0 0 260 50" preserveAspectRatio="none">
+            <polyline class="scope-trace trans-trace" fill="none" stroke="var(--electron)" stroke-width="2"
+              points="0,40 30,40 32,8 62,8 64,40 94,40 96,8 126,8 128,40 158,40 160,8 190,8 192,40 222,40 224,8 254,8" />
+          </svg>
+          <div class="scope-note">near-instant switching, stable, cool-running</div>
+        </div>
+      </div>
+      <div class="callout">A vacuum-tube computer like ENIAC needed roughly 18,000 tubes, filled a room, and a tube failed on average every couple of days. A single modern microcontroller now holds <b>billions</b> of transistor-equivalent switches on one chip smaller than a fingernail.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 7. PROCESS CONTROL COMPUTERS ============ -->
+  <section class="era" id="s7" data-era="electron" data-title="Process Computers">
+    <div class="index">07</div>
+    <div class="eyebrow">1959 · Texaco, Port Arthur</div>
+    <h2>Computers enter industrial control directly</h2>
+    <p class="lede">A general-purpose computer supervised a live industrial process for one of the first times — coordinating measurements that used to be split across dozens of separate instruments.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — a process computer coming online</div>
+      <div class="term-screen">
+        <div class="term-line">&gt; INITIALIZING PROCESS LINK...</div>
+        <div class="term-line">&gt; READING 42 ANALOG POINTS...</div>
+        <div class="term-line">&gt; SUPERVISORY MODE: ENABLED</div>
+        <div class="term-line">&gt; STATUS: NOMINAL <span class="cursor"></span></div>
+      </div>
+      <p style="margin-top:16px;">Why computers were needed: as processes grew larger and more interconnected, no single pneumatic or relay-based system could coordinate them all from one place.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 8. PLC ============ -->
+  <section class="era" id="s8" data-era="digital" data-title="Birth of the PLC">
+    <div class="index">08</div>
+    <div class="eyebrow">1968–1970 · Modicon 084</div>
+    <h2>The PLC — logic becomes software</h2>
+    <p class="lede">GM asked for an electronic replacement for relay panels. Bedford Associates, led by Dick Morley, delivered the Modicon 084 — the 84th project at the firm, and the first commercially deployed PLC.</p>
+
+    <div class="panel">
+      <div class="panel-label">Interactive — toggle between before and after</div>
+      <div class="plc-toggle-wrap state-before" id="plcState">
+        <button class="plc-toggle-btn" id="plcToggle">Show: relay panel → click to swap</button>
+        <svg viewBox="0 0 260 140" style="width:100%; max-width:420px; height:auto; margin:0 auto; display:block;">
+          <g class="relay-mess">
+            <line x1="20" y1="20" x2="80" y2="110" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="40" y1="15" x2="110" y2="120" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="60" y1="25" x2="140" y2="100" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="90" y1="10" x2="30" y2="115" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="120" y1="20" x2="60" y2="120" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="150" y1="15" x2="90" y2="110" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="170" y1="25" x2="220" y2="115" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="200" y1="10" x2="140" y2="120" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="230" y1="20" x2="170" y2="110" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="20" y1="120" x2="240" y2="20" stroke="var(--ink-faint)" stroke-width="1"/>
+            <rect x="10" y="8" width="240" height="124" fill="none" stroke="var(--line-strong)" />
+          </g>
+          <g class="plc-box">
+            <rect x="80" y="30" width="100" height="70" rx="6" fill="var(--bg)" stroke="var(--dot,var(--digital))" stroke-width="2"/>
+            <text x="130" y="70" text-anchor="middle" class="loop-node-label" style="font-size:11px; fill:var(--digital);">PLC</text>
+            <text x="130" y="82" text-anchor="middle" class="loop-node-label" style="font-size:8px;">MODICON 084</text>
+          </g>
+        </svg>
+        <div class="state-label" id="plcStateLabel">BEFORE — a wall of wired relay logic</div>
+      </div>
+      <ul class="key-points" style="margin-top:20px;">
+        <li>Every relay-logic change meant physically rewiring the panel — expensive and slow.</li>
+        <li>The 084 was programmed in Ladder Logic, deliberately designed to look like the relay diagrams electricians already knew.</li>
+        <li>What changed: logic that required rewiring a cabinet could now be changed by editing and downloading a program.</li>
+      </ul>
+
+      <div class="panel-label" style="margin-top:28px;">Animation — one rung of ladder logic, energizing</div>
+      <p style="font-size:14px; color:var(--ink-dim); margin-bottom:14px;">This is the exact "look" the 084 borrowed from relay diagrams: two vertical power rails, contacts in between. When both contacts close, current flows and the coil on the right energizes an output.</p>
+      <svg viewBox="0 0 300 90" style="width:100%; height:auto;">
+        <line x1="20" y1="10" x2="20" y2="80" stroke="var(--line-strong)" stroke-width="2"/>
+        <line x1="280" y1="10" x2="280" y2="80" stroke="var(--line-strong)" stroke-width="2"/>
+        <line class="rung-wire" x1="20" y1="45" x2="90" y2="45" stroke="var(--line-strong)" stroke-width="2"/>
+        <g class="rung-contact">
+          <line x1="90" y1="35" x2="90" y2="55" stroke="var(--ink-dim)" stroke-width="2"/>
+          <line x1="110" y1="35" x2="110" y2="55" stroke="var(--ink-dim)" stroke-width="2"/>
+          <text x="100" y="30" text-anchor="middle" class="loop-node-label">START</text>
+        </g>
+        <line class="rung-wire" x1="110" y1="45" x2="170" y2="45" stroke="var(--line-strong)" stroke-width="2"/>
+        <g class="rung-contact">
+          <line x1="170" y1="35" x2="170" y2="55" stroke="var(--ink-dim)" stroke-width="2"/>
+          <line x1="190" y1="35" x2="190" y2="55" stroke="var(--ink-dim)" stroke-width="2"/>
+          <text x="180" y="30" text-anchor="middle" class="loop-node-label">LIMIT SW</text>
+        </g>
+        <line class="rung-wire" x1="190" y1="45" x2="235" y2="45" stroke="var(--line-strong)" stroke-width="2"/>
+        <circle id="rungCoil" cx="255" cy="45" r="20" fill="none" stroke="var(--ink-dim)" stroke-width="2"/>
+        <text x="255" y="49" text-anchor="middle" class="loop-node-label" style="font-size:8px;">OUT</text>
+        <circle class="rung-pulse" r="4" fill="var(--digital)" style="offset-path:path('M20,45 L235,45'); animation:rungFlow 2.6s ease-in-out infinite;"></circle>
+      </svg>
+
+      <div class="panel-label" style="margin-top:28px;">Animation — the PLC scan cycle, running continuously</div>
+      <p style="font-size:14px; color:var(--ink-dim); margin-bottom:14px;">This loop is what a PLC is actually doing, forever, dozens to thousands of times per second: read every input, run the whole program against those values, write every output, then start over.</p>
+      <svg viewBox="0 0 220 220" style="width:220px; height:220px; margin:0 auto; display:block;">
+        <path class="loop-track" d="M110,40 A70,70 0 1,1 109,40" />
+        <circle id="scanDot" class="loop-dot" r="5" />
+        <g><circle class="loop-node on" cx="110" cy="40" r="26"/><text class="loop-node-label" x="110" y="37" text-anchor="middle">READ</text><text class="loop-node-label" x="110" y="47" text-anchor="middle">INPUTS</text></g>
+        <g><circle class="loop-node" cx="180" cy="110" r="26"/><text class="loop-node-label" x="180" y="107" text-anchor="middle">RUN</text><text class="loop-node-label" x="180" y="117" text-anchor="middle">PROGRAM</text></g>
+        <g><circle class="loop-node" cx="110" cy="180" r="26"/><text class="loop-node-label" x="110" y="177" text-anchor="middle">WRITE</text><text class="loop-node-label" x="110" y="187" text-anchor="middle">OUTPUTS</text></g>
+        <g><circle class="loop-node" cx="40" cy="110" r="26"/><text class="loop-node-label" x="40" y="107" text-anchor="middle">HOUSE-</text><text class="loop-node-label" x="40" y="117" text-anchor="middle">KEEPING</text></g>
+      </svg>
+      <div class="callout">A typical scan takes well under 50 milliseconds. That speed is why a PLC can catch a fault, stop a motor, and log the event before a human would even finish seeing it happen.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 9. THIRD INDUSTRIAL REVOLUTION ============ -->
+  <section class="era" id="s9" data-era="digital" data-title="Computerized Automation">
+    <div class="index">09</div>
+    <div class="eyebrow">Industry 3.0</div>
+    <h2>Electronics and computing take over automation</h2>
+    <p class="lede">Microprocessors, PLCs, and CNC machines together define Industry 3.0 — automation built on electronics and computing rather than purely electromechanical hardware.</p>
+    <p>Microprocessors packed the logic of an entire computer onto a single chip, making digital controllers small and affordable enough to bolt onto ordinary machine tools. CNC (Computer Numerical Control) applies that same programmable-logic idea to precision machining: a stored program of X/Y/Z coordinates drives the cutting tool, not a machinist's hand on a wheel.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — the stack builds up, layer by layer</div>
+      <div class="stack-build">
+        <div class="stack-row">Computer-based control — supervisory software</div>
+        <div class="stack-row">PLC — programmable, software-defined logic</div>
+        <div class="stack-row">Electronic — transistor-based switching</div>
+        <div class="stack-row">Electrical — relays, motors, contactors</div>
+      </div>
+
+      <div class="panel-label" style="margin-top:28px;">Animation — CNC toolpath, cut by a program, not a hand</div>
+      <svg viewBox="0 0 260 140" style="width:100%; height:auto;">
+        <rect x="20" y="20" width="220" height="100" fill="none" stroke="var(--line-strong)" stroke-dasharray="3 4" />
+        <path id="cncPath" d="M40,100 L40,40 L100,40 L100,70 L160,70 L160,30 L220,30 L220,100 Z"
+              fill="none" stroke="var(--line-strong)" stroke-width="1.5" />
+        <path id="cncDrawn" d="M40,100 L40,40 L100,40 L100,70 L160,70 L160,30 L220,30 L220,100 Z"
+              fill="none" stroke="var(--dot,var(--digital))" stroke-width="2.5"
+              stroke-dasharray="500" stroke-dashoffset="500" class="cnc-drawn" />
+        <circle id="cncTool" r="5" fill="var(--digital)" style="offset-path:path('M40,100 L40,40 L100,40 L100,70 L160,70 L160,30 L220,30 L220,100 Z'); animation:cncMove 4s linear infinite;"></circle>
+      </svg>
+      <div class="callout">The program controls exact coordinates, feed rate, and tool changes — the same block of code cuts the same part, correctly, ten thousand times in a row.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 10. DCS ============ -->
+  <section class="era" id="s10" data-era="digital" data-title="Birth of the DCS">
+    <div class="index">10</div>
+    <div class="eyebrow">1975 · Honeywell TDC 2000</div>
+    <h2>Continuous processes needed something different</h2>
+    <p class="lede">The PLC excelled at discrete, sequential control. Large continuous processes — refineries, chemical plants — needed control distributed across many areas, tied together under one operator view.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — data pulsing between distributed controller nodes</div>
+      <svg viewBox="0 0 260 160" style="width:100%; height:auto;">
+        <path id="dcsPathA" class="dcs-path" d="M130,80 L50,40" />
+        <path id="dcsPathB" class="dcs-path" d="M130,80 L210,40" />
+        <path id="dcsPathC" class="dcs-path" d="M130,80 L50,120" />
+        <path id="dcsPathD" class="dcs-path" d="M130,80 L210,120" />
+        <circle cx="130" cy="80" r="16" fill="var(--bg-raise)" stroke="var(--dot,var(--digital))" stroke-width="2"/>
+        <text x="130" y="84" text-anchor="middle" class="loop-node-label">HMI</text>
+        <circle cx="50" cy="40" r="12" fill="var(--bg-raise)" stroke="var(--line-strong)"/>
+        <circle cx="210" cy="40" r="12" fill="var(--bg-raise)" stroke="var(--line-strong)"/>
+        <circle cx="50" cy="120" r="12" fill="var(--bg-raise)" stroke="var(--line-strong)"/>
+        <circle cx="210" cy="120" r="12" fill="var(--bg-raise)" stroke="var(--line-strong)"/>
+        <circle r="3.5" fill="var(--digital)" style="offset-path:path('M130,80 L50,40'); animation:dcsMove 2.2s linear infinite;"></circle>
+        <circle r="3.5" fill="var(--digital)" style="offset-path:path('M130,80 L210,40'); animation:dcsMove 2.2s linear infinite .5s;"></circle>
+        <circle r="3.5" fill="var(--digital)" style="offset-path:path('M130,80 L50,120'); animation:dcsMove 2.2s linear infinite 1s;"></circle>
+        <circle r="3.5" fill="var(--digital)" style="offset-path:path('M130,80 L210,120'); animation:dcsMove 2.2s linear infinite 1.5s;"></circle>
+      </svg>
+      <ul class="key-points">
+        <li>A DCS spreads many controllers across the plant, tied together through shared communication.</li>
+        <li>Yokogawa's early CENTUM system appeared around the same period as the TDC 2000.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 11. HMI / SCADA ============ -->
+  <section class="era" id="s11" data-era="digital" data-title="HMI & SCADA">
+    <div class="index">11</div>
+    <div class="eyebrow">Supervisory control and data acquisition</div>
+    <h2>One screen, many controllers</h2>
+    <p class="lede">Islands of automation needed a way for a human to see and supervise all of them at once. HMI gave a visual window into a process; SCADA extended that across an entire site.</p>
+    <p><b>HMI</b> (Human-Machine Interface) replaced physical gauges and indicator lamps with screens, local to one machine. <b>SCADA</b> (Supervisory Control and Data Acquisition) took that idea site-wide — polling many remote controllers, displaying them on one set of screens, and letting an operator issue commands back down to any of them, without leaving the control room.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — a live supervisory dashboard</div>
+      <div class="scada-panel">
+        <div class="scada-tile"><div class="lbl">Line Speed</div><div class="scada-bar"><span></span></div><div class="scada-dot"></div></div>
+        <div class="scada-tile"><div class="lbl">Tank Level</div><div class="scada-bar"><span></span></div><div class="scada-dot"></div></div>
+        <div class="scada-tile"><div class="lbl">Temp Zone 2</div><div class="scada-bar"><span></span></div><div class="scada-dot"></div></div>
+      </div>
+
+      <div class="panel-label" style="margin-top:24px;">Animation — the alarm log, scrolling live</div>
+      <div class="alarm-log" id="alarmLog"></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 12. FIELDBUS ============ -->
+  <section class="era" id="s12" data-era="digital" data-title="Fieldbus">
+    <div class="index">12</div>
+    <div class="eyebrow">1980s–1990s</div>
+    <h2>One shared line, instead of a wire for everything</h2>
+    <p class="lede">Point-to-point wiring for thousands of I/O points does not scale. Fieldbus let many devices share a single digital line, and report diagnostics — not just a raw value.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — data traveling along a shared bus</div>
+      <svg viewBox="0 0 280 100" style="width:100%; height:auto;">
+        <line x1="20" y1="50" x2="260" y2="50" stroke="var(--line-strong)" stroke-width="2"/>
+        <g>
+          <circle cx="60" cy="50" r="8" fill="var(--bg-raise)" stroke="var(--dot,var(--digital))" stroke-width="1.5"/>
+          <text x="60" y="75" text-anchor="middle" class="loop-node-label">Sensor</text>
+        </g>
+        <g>
+          <circle cx="130" cy="50" r="8" fill="var(--bg-raise)" stroke="var(--dot,var(--digital))" stroke-width="1.5"/>
+          <text x="130" y="75" text-anchor="middle" class="loop-node-label">Valve</text>
+        </g>
+        <g>
+          <circle cx="200" cy="50" r="8" fill="var(--bg-raise)" stroke="var(--dot,var(--digital))" stroke-width="1.5"/>
+          <text x="200" y="75" text-anchor="middle" class="loop-node-label">Drive</text>
+        </g>
+        <circle r="4" fill="var(--digital)" style="offset-path:path('M20,50 L260,50'); animation:fieldbus-pulse 2.6s linear infinite;" class="fieldbus-pulse"></circle>
+      </svg>
+
+      <div class="panel-label" style="margin-top:24px;">Animation — wiring cost, before and after fieldbus</div>
+      <div class="wiring-compare">
+        <div class="wiring-col">
+          <svg viewBox="0 0 120 90"><g class="wiring-mess">
+            <line x1="10" y1="10" x2="60" y2="80"/><line x1="20" y1="8" x2="70" y2="82"/>
+            <line x1="35" y1="12" x2="90" y2="78"/><line x1="55" y1="6" x2="30" y2="84"/>
+            <line x1="75" y1="10" x2="45" y2="80"/><line x1="95" y1="8" x2="55" y2="82"/>
+            <line x1="105" y1="14" x2="20" y2="76"/><line x1="15" y1="80" x2="105" y2="14"/>
+          </g></svg>
+          <div class="wiring-tag">Point-to-point — 1 wire pair per device</div>
+        </div>
+        <div class="wiring-col">
+          <svg viewBox="0 0 120 90">
+            <line x1="10" y1="45" x2="110" y2="45" stroke="var(--digital)" stroke-width="2"/>
+            <circle cx="30" cy="45" r="5" fill="var(--bg-raise)" stroke="var(--digital)"/>
+            <circle cx="60" cy="45" r="5" fill="var(--bg-raise)" stroke="var(--digital)"/>
+            <circle cx="90" cy="45" r="5" fill="var(--bg-raise)" stroke="var(--digital)"/>
+          </svg>
+          <div class="wiring-tag" style="color:var(--digital);">Fieldbus — 1 shared line, many devices</div>
+        </div>
+      </div>
+      <ul class="key-points">
+        <li>Digital, multi-drop, serial communication — devices share one line instead of each needing dedicated wires.</li>
+        <li>Devices report diagnostics and configuration, not just a single raw value.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 13. INDUSTRIAL ETHERNET ============ -->
+  <section class="era" id="s13" data-era="digital" data-title="Industrial Ethernet">
+    <div class="index">13</div>
+    <div class="eyebrow">2000s</div>
+    <h2>The factory floor joins the internet's network stack</h2>
+    <p class="lede">Standard Ethernet and TCP/IP — ruggedized for real-time determinism — let controllers, drives, and I/O share one common physical network.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — a packet climbing the architecture</div>
+      <div class="layer-stack">
+        <div class="layer-row">Sensor <div class="layer-packet" style="animation-delay:0s;"></div></div>
+        <div class="layer-row">I/O <div class="layer-packet" style="animation-delay:.44s;"></div></div>
+        <div class="layer-row">PLC <div class="layer-packet" style="animation-delay:.88s;"></div></div>
+        <div class="layer-row">Industrial Ethernet <div class="layer-packet" style="animation-delay:1.32s;"></div></div>
+        <div class="layer-row">HMI / SCADA <div class="layer-packet" style="animation-delay:1.76s;"></div></div>
+        <div class="layer-row">Historian <div class="layer-packet" style="animation-delay:2.2s;"></div></div>
+        <div class="layer-row">MES / ERP <div class="layer-packet" style="animation-delay:2.64s;"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 14. INDUSTRY 4.0 ============ -->
+  <section class="era" id="s14" data-era="smart" data-title="Industry 4.0">
+    <div class="index">14</div>
+    <div class="eyebrow">2011 onward</div>
+    <h2>From executing instructions to sensing and deciding</h2>
+    <p class="lede">Cyber-physical systems, IIoT, edge/cloud computing, and machine learning — automation that senses, connects, analyzes, and decides.</p>
+    <p>Every dot in the animation below is a sensor, machine, or controller; every line is a live data connection. Unlike the fieldbus and Ethernet networks from the previous two sections — which mostly move a control signal from A to B — this layer exists to accumulate history: months of vibration readings, temperature trends, and cycle times, feeding models that predict a bearing failure before it happens.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — a connected sensor network, forming and re-forming</div>
+      <div class="net-wrap">
+        <canvas class="net-canvas" id="netCanvas"></canvas>
+        <div class="net-tag net-tag-edge">EDGE</div>
+        <div class="net-tag net-tag-cloud">CLOUD</div>
+      </div>
+      <ul class="key-points">
+        <li><b>Cyber-physical systems</b> — physical machines tightly coupled with their digital models.</li>
+        <li><b>IIoT</b> — sensors and devices connected far beyond the traditional control network.</li>
+        <li><b>Edge / cloud computing</b> — processing close to the source, or centrally at scale.</li>
+        <li><b>Machine learning</b> — historical and live data feeding predictive, not just reactive, decisions.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 15. AUTOMATION TODAY ============ -->
+  <section class="era" id="s15" data-era="smart" data-title="Automation Today">
+    <div class="index">15</div>
+    <div class="eyebrow">Every era, still running</div>
+    <h2>Nothing got replaced. It all got layered.</h2>
+    <p class="lede">Relay logic still runs simple machines. PLCs still run most discrete manufacturing. DCS still runs most continuous plants — all increasingly wrapped in IIoT and AI-assisted decisions.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — every era, stacked to today</div>
+      <div class="recap-bars">
+        <div class="recap-bar" style="height:30%; background:var(--mech); animation-delay:.05s;"></div>
+        <div class="recap-bar" style="height:42%; background:var(--elec); animation-delay:.15s;"></div>
+        <div class="recap-bar" style="height:55%; background:var(--electron); animation-delay:.25s;"></div>
+        <div class="recap-bar" style="height:70%; background:var(--digital); animation-delay:.35s;"></div>
+        <div class="recap-bar" style="height:65%; background:var(--digital); animation-delay:.45s;"></div>
+        <div class="recap-bar" style="height:88%; background:var(--smart); animation-delay:.55s;"></div>
+        <div class="recap-bar" style="height:100%; background:var(--smart); animation-delay:.65s;"></div>
+      </div>
+      <div class="callout" style="margin-top:20px;">Walk any modern plant floor and you'll find all seven bars above running at once, in the same building: a relay still trips an emergency stop, a PLC still sequences a conveyor, a DCS still holds a reactor at temperature, and a cloud dashboard still predicts next month's maintenance — none of them waiting for the others to be retired first.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ WHAT CHANGED TABLE ============ -->
+  <section class="era" id="s16" data-era="smart" data-title="What Changed">
+    <div class="index">16</div>
+    <div class="eyebrow">The real question</div>
+    <h2>What actually changed at every stage?</h2>
+    <p class="lede">Not "what was invented" — "what problem did it solve?"</p>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Era</th><th>Main Technology</th><th>Human Role</th><th>Limitation Solved</th></tr></thead>
+        <tbody>
+          <tr><td>Manual</td><td>Human operation</td><td>High</td><td>—</td></tr>
+          <tr><td>Mechanization</td><td>Steam / water power</td><td>High</td><td>Physical effort</td></tr>
+          <tr><td>Feedback</td><td>Watt's governor</td><td>Medium</td><td>Manual correction</td></tr>
+          <tr><td>Electrification</td><td>Motors, electricity</td><td>Medium</td><td>Fixed layout</td></tr>
+          <tr><td>Relay Control</td><td>Electromechanical logic</td><td>Lower</td><td>Sequential control</td></tr>
+          <tr><td>PLC</td><td>Programmable electronics</td><td>Lower</td><td>Hard-wired logic</td></tr>
+          <tr><td>DCS / SCADA</td><td>Distributed computing</td><td>Supervisory</td><td>Large-scale control</td></tr>
+          <tr><td>Networks</td><td>Digital communication</td><td>Supervisory</td><td>Wiring cost</td></tr>
+          <tr><td>Industry 4.0</td><td>Cyber-physical / IIoT</td><td>Data-driven</td><td>Integration &amp; intelligence</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ MASTER TIMELINE ============ -->
+  <section class="era" id="s17" data-era="smart" data-title="Evolution Timeline">
+    <div class="index">17</div>
+    <div class="eyebrow">Year scale</div>
+    <h2>250 years, compressed</h2>
+    <p class="lede">Every stage above, on one line.</p>
+
+    <div class="panel">
+      <div class="panel-label">Animation — the full timeline draws itself in</div>
+      <div class="timeline-wrap">
+        <div class="timeline-track"></div>
+        <div class="timeline-fill" id="timelineFill"></div>
+        <div class="timeline-items">
+          <div class="timeline-item"><div class="timeline-year">1770s</div><div class="timeline-dot" style="border-color:var(--mech);"></div><div class="timeline-label">Steam power</div></div>
+          <div class="timeline-item"><div class="timeline-year">1788</div><div class="timeline-dot" style="border-color:var(--mech);"></div><div class="timeline-label">Watt's governor</div></div>
+          <div class="timeline-item"><div class="timeline-year">1870s</div><div class="timeline-dot" style="border-color:var(--elec);"></div><div class="timeline-label">Electric motors</div></div>
+          <div class="timeline-item"><div class="timeline-year">1947</div><div class="timeline-dot" style="border-color:var(--electron);"></div><div class="timeline-label">Transistor</div></div>
+          <div class="timeline-item"><div class="timeline-year">1968</div><div class="timeline-dot" style="border-color:var(--digital);"></div><div class="timeline-label">First PLC</div></div>
+          <div class="timeline-item"><div class="timeline-year">1975</div><div class="timeline-dot" style="border-color:var(--digital);"></div><div class="timeline-label">First DCS</div></div>
+          <div class="timeline-item"><div class="timeline-year">2011</div><div class="timeline-dot" style="border-color:var(--smart);"></div><div class="timeline-label">Industry 4.0</div></div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:32px;">
+        <b>Every major evolution improved one of these:</b><br>
+        Human effort → Repeatability → Speed → Precision → Safety → Flexibility → Information → Connectivity → Intelligence.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>References: ISA · Schneider Electric (Modicon PLC history) · Computer History Museum · Wikipedia — Programmable Logic Controller, Centrifugal Governor, History of the Transistor · AutomationDirect Library</div>
+    <div style="margin-top:14px;">Companion file for <a href="./02-where-did-industrial-automation-begin-history.md">02-where-did-industrial-automation-begin-history.md</a> — part of DeepURForge.</div>
+  </footer>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- progress bar + era color ---------------- */
+  var progressBar = document.getElementById('progressBar');
+  var eraColors = { mech:'#b98a54', elec:'#e6a531', electron:'#4f9bd6', digital:'#2fd6ae', smart:'#8f7ae6' };
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.era'));
+
+  function onScroll(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var pct = height > 0 ? (scrollTop / height) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  /* ---------------- side rail ---------------- */
+  var rail = document.getElementById('rail');
+  var railItems = [];
+  sections.forEach(function(sec, i){
+    var btn = document.createElement('div');
+    btn.className = 'rail-item';
+    btn.textContent = String(i+1).padStart(2,'0');
+    btn.title = sec.getAttribute('data-title') || '';
+    btn.style.setProperty('--dot', eraColors[sec.getAttribute('data-era')] || '#4f9bd6');
+    btn.addEventListener('click', function(){
+      sec.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    var line = document.createElement('div');
+    line.className = 'rail-line';
+    btn.appendChild(line);
+    rail.appendChild(btn);
+    railItems.push(btn);
+  });
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var idx = sections.indexOf(entry.target);
+      if (entry.isIntersecting){
+        railItems.forEach(function(it){ it.classList.remove('active'); });
+        if (railItems[idx]) railItems[idx].classList.add('active');
+        var era = entry.target.getAttribute('data-era');
+        var color = eraColors[era] || '#4f9bd6';
+        document.documentElement.style.setProperty('--era', color);
+        progressBar.style.background = color;
+      }
+    });
+  }, { threshold:0.5 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  /* ---------------- reveal panels on scroll ---------------- */
+  var panels = document.querySelectorAll('.panel');
+  var revealIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting){
+        entry.target.classList.add('in');
+      }
+    });
+  }, { threshold:0.2 });
+  panels.forEach(function(p){ revealIO.observe(p); });
+
+  /* ---------------- human loop step cycling ---------------- */
+  var humanSteps = document.querySelectorAll('.human-step');
+  if (humanSteps.length){
+    var hi = 0;
+    setInterval(function(){
+      humanSteps.forEach(function(s){ s.classList.remove('active'); });
+      humanSteps[hi].classList.add('active');
+      hi = (hi + 1) % humanSteps.length;
+    }, 900);
+  }
+
+  /* ---------------- loop dot travel (hero loop + PLC scan cycle) ---------------- */
+  var loopTracks = document.querySelectorAll('.loop-track');
+  loopTracks.forEach(function(path, idx){
+    var svg = path.closest('svg');
+    var dot = svg.querySelector('.loop-dot');
+    if (!dot) return;
+    var len = path.getTotalLength();
+    var start = null;
+    var duration = idx === 0 ? 4000 : 3200; // scan cycle runs a touch faster
+    function tick(ts){
+      if (!start) start = ts;
+      var elapsed = (ts - start) % duration;
+      var pt = path.getPointAtLength((elapsed/duration) * len);
+      dot.setAttribute('cx', pt.x);
+      dot.setAttribute('cy', pt.y);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  /* ---------------- governor simulator ---------------- */
+  var govSlider = document.getElementById('govSlider');
+  var govBallLeft = document.getElementById('govBallLeft');
+  var govBallRight = document.getElementById('govBallRight');
+  var govLeft = document.getElementById('govLeft');
+  var govRight = document.getElementById('govRight');
+  var govValve = document.getElementById('govValve');
+  var govRpmOut = document.getElementById('govRpmOut');
+  var govAngleOut = document.getElementById('govAngleOut');
+  var govValveOut = document.getElementById('govValveOut');
+  var govNeedle = document.getElementById('govNeedle');
+  var govGaugeArc = document.getElementById('govGaugeArc');
+
+  function updateGovernor(){
+    var v = parseFloat(govSlider.value); // 0-100
+    var rpm = Math.round(200 + v * 6);
+    var angle = Math.round(10 + v * 0.6); // degrees of swing
+    var valveOpen = Math.round(Math.max(15, 100 - v * 0.85));
+
+    govRpmOut.textContent = rpm;
+    govAngleOut.textContent = angle + '°';
+    govValveOut.textContent = valveOpen + '%';
+
+    var rad = (angle) * Math.PI / 180;
+    var swing = Math.sin(rad) * 30;
+
+    govLeft.setAttribute('transform', 'rotate(' + (-angle*0.6) + ' 100 70)');
+    govRight.setAttribute('transform', 'rotate(' + (angle*0.6) + ' 100 70)');
+
+    var valveWidth = 20 * (valveOpen/100);
+    govValve.setAttribute('width', Math.max(2, valveWidth));
+    govValve.setAttribute('x', 100 - valveWidth/2);
+
+    // gauge needle: sweeps -90deg (min) to +90deg (max) around its pivot at (100,100)
+    if (govNeedle){
+      var needleDeg = -90 + (v/100) * 180;
+      govNeedle.setAttribute('transform', 'rotate(' + needleDeg + ' 100 100)');
+    }
+    // gauge arc fill: dasharray total ~251 (half-circle length), offset shrinks as speed rises
+    if (govGaugeArc){
+      var arcLen = 251;
+      var offset = arcLen - (v/100) * arcLen;
+      govGaugeArc.setAttribute('stroke-dashoffset', offset);
+    }
+  }
+  if (govSlider){
+    govSlider.addEventListener('input', updateGovernor);
+    updateGovernor();
+    // gentle auto-drift so the mechanism feels alive even before interaction
+    var autoDir = 1;
+    setInterval(function(){
+      if (document.activeElement === govSlider) return;
+      var v = parseFloat(govSlider.value);
+      v += autoDir * 0.6;
+      if (v >= 85 || v <= 15) autoDir *= -1;
+      govSlider.value = v;
+      updateGovernor();
+    }, 120);
+  }
+
+  /* ---------------- SCADA alarm log ---------------- */
+  var alarmLog = document.getElementById('alarmLog');
+  if (alarmLog){
+    var alarmMsgs = [
+      { lvl:'OK',   cls:'ok',   text:'Tank Level 2 — back within normal range' },
+      { lvl:'WARN', cls:'warn', text:'Line Speed — approaching upper limit' },
+      { lvl:'OK',   cls:'ok',   text:'Temp Zone 2 — setpoint reached' },
+      { lvl:'CRIT', cls:'crit', text:'Pump 3 — pressure spike detected' },
+      { lvl:'OK',   cls:'ok',   text:'Pump 3 — pressure normalized' },
+      { lvl:'WARN', cls:'warn', text:'Conveyor B — motor current elevated' }
+    ];
+    var alarmIdx = 0;
+    function pushAlarm(){
+      var now = new Date();
+      var hh = String(now.getHours()).padStart(2,'0');
+      var mm = String(now.getMinutes()).padStart(2,'0');
+      var ss = String(now.getSeconds()).padStart(2,'0');
+      var msg = alarmMsgs[alarmIdx % alarmMsgs.length];
+      alarmIdx++;
+      var row = document.createElement('div');
+      row.className = 'alarm-row ' + msg.cls;
+      row.innerHTML = '<span class="t">' + hh + ':' + mm + ':' + ss + '</span><span class="lvl">' + msg.lvl + '</span><span>' + msg.text + '</span>';
+      alarmLog.prepend(row);
+      while (alarmLog.children.length > 6){ alarmLog.removeChild(alarmLog.lastChild); }
+    }
+    pushAlarm();
+    setInterval(pushAlarm, 2400);
+  }
+
+  /* ---------------- PLC toggle ---------------- */
+  var plcToggle = document.getElementById('plcToggle');
+  var plcState = document.getElementById('plcState');
+  var plcStateLabel = document.getElementById('plcStateLabel');
+  if (plcToggle){
+    plcToggle.addEventListener('click', function(){
+      var isBefore = plcState.classList.contains('state-before');
+      plcState.classList.toggle('state-before', !isBefore);
+      plcState.classList.toggle('state-after', isBefore);
+      plcStateLabel.textContent = isBefore
+        ? 'AFTER — one PLC, reprogrammed instead of rewired'
+        : 'BEFORE — a wall of wired relay logic';
+      plcToggle.textContent = isBefore ? 'Show: PLC → click to swap' : 'Show: relay panel → click to swap';
+    });
+  }
+
+  /* ---------------- Industry 4.0 particle network ---------------- */
+  var canvas = document.getElementById('netCanvas');
+  if (canvas && canvas.getContext){
+    var ctx = canvas.getContext('2d');
+    var W, H, nodes = [];
+    function resize(){
+      W = canvas.clientWidth; H = canvas.clientHeight || 220;
+      canvas.width = W * devicePixelRatio;
+      canvas.height = H * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    function makeNodes(){
+      nodes = [];
+      var count = Math.max(14, Math.floor(W/60));
+      for (var i=0;i<count;i++){
+        nodes.push({
+          x: Math.random()*W, y: Math.random()*H,
+          vx:(Math.random()-0.5)*0.35, vy:(Math.random()-0.5)*0.35
+        });
+      }
+    }
+    function step(){
+      ctx.clearRect(0,0,W,H);
+      nodes.forEach(function(n){
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+      });
+      for (var i=0;i<nodes.length;i++){
+        for (var j=i+1;j<nodes.length;j++){
+          var dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          var dist = Math.sqrt(dx*dx+dy*dy);
+          if (dist < 90){
+            ctx.strokeStyle = 'rgba(143,122,230,' + (1 - dist/90)*0.5 + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n){
+        ctx.fillStyle = '#8f7ae6';
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 2.4, 0, Math.PI*2);
+        ctx.fill();
+      });
+      requestAnimationFrame(step);
+    }
+    resize();
+    makeNodes();
+    requestAnimationFrame(step);
+    window.addEventListener('resize', function(){ resize(); makeNodes(); });
+  }
+
+  /* ---------------- master timeline fill ---------------- */
+  var timelineSection = document.getElementById('s17');
+  var timelineFill = document.getElementById('timelineFill');
+  if (timelineSection && timelineFill){
+    var filledOnce = false;
+    var tIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting && !filledOnce){
+          filledOnce = true;
+          timelineFill.style.width = '100%';
+        }
+      });
+    }, { threshold:0.3 });
+    tIO.observe(timelineSection);
+  }
+
+})();
+</script>
+</body>
+</html>
