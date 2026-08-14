@@ -4,12 +4,13 @@
 
 > **DeepURForge Research Series — Article 01**
 > Foundations of Industrial Automation, built from first principles.
+> *This article answers one question only: "What is industrial automation, and what makes a system automated?" Deeper technical material (sensors, control theory, PLC internals, architecture) has its own dedicated chapters later in this series — see Section 11.*
 
 ---
 
 ## 1. The Problem Automation Solves
 
-Before any technology existed, every industrial process was run by a human being who watched a physical quantity and reacted to it by hand.
+Before modern automation technologies existed, many industrial processes depended heavily on humans to observe, judge, and act.
 
 A worker watching a boiler had to:
 - **Observe** — look at a pressure gauge
@@ -39,9 +40,10 @@ Two words carry all the weight in that sentence: **monitor** and **control**.
 
 **NIST** describes an Industrial Control System (ICS) as a combination of electrical, mechanical, hydraulic, and pneumatic components that work together to achieve an industrial objective (e.g., manufacturing, transportation of matter or energy).
 
-So automation is not "a computer running a factory." It is the *general principle* of replacing a human observing-and-reacting loop with a technological one — the computer, PLC, or controller is just one possible implementation of that principle.
+So automation is not "a computer running a factory." It is the *general principle* of replacing a human observing-and-reacting loop with a technological one.
 
 **Key distinction:**
+
 | Term | What it means | What it does NOT mean |
 |---|---|---|
 | Monitor | Continuously sense real-world state | Just "having a sensor installed" |
@@ -74,7 +76,7 @@ In real industrial systems, mechanization and automation are layered together: a
 
 ## 4. The Fundamental Automation Loop
 
-Every automated system — no matter how simple or complex — reduces to the same closed loop:
+A large class of industrial automation systems can be understood through the same basic loop:
 
 ```mermaid
 flowchart LR
@@ -84,11 +86,33 @@ flowchart LR
     D --> A
 ```
 
-This is the single idea that everything else in industrial automation is built on top of. A single-tank level controller and an entire oil refinery both run on this same loop — the refinery just has thousands of these loops running simultaneously and talking to each other.
+This **sense → decide → act** loop is one of the most useful mental models in this entire series — a single-tank level controller and a large section of a plant both run on some version of it.
+
+But it's important to be precise here: **not every automated system is a closed feedback loop.** A system that measures its own result and adjusts based on it is *closed-loop*. A system that simply executes a pre-defined command *without* measuring the outcome is *open-loop* — for example, a timer-based irrigation valve that opens for 10 minutes regardless of whether the soil is actually wet enough afterward. Both are legitimate forms of automation. We'll draw this distinction properly in a dedicated chapter later in the series.
 
 ---
 
-## 5. The Physical Process
+## 5. Automation Is Bigger Than Control
+
+It's tempting, after seeing the loop above, to conclude that "automation" simply *means* continuous feedback control. It doesn't — that's only one piece of it.
+
+Industrial automation, as a field, also includes:
+
+- **Sequencing** — running a fixed series of steps in order (e.g., a batch mixing sequence)
+- **Interlocking** — preventing unsafe or invalid actions (e.g., "don't open this valve unless that pump is off")
+- **Coordination** — getting multiple machines to work together correctly
+- **Monitoring & alarming** — flagging abnormal conditions for a human to see
+- **Data acquisition** — recording process values over time
+- **Recipe management** — storing and recalling parameter sets for different products
+- **Diagnostics** — detecting and reporting equipment faults
+- **Production tracking** — counting, timing, and logging output
+- **Supervisory control** — coordinating and overseeing many lower-level control loops at once
+
+The sense → decide → act loop is the foundation these are all built on, but treating automation as *only* that loop gives too narrow a mental model. Keep this list in mind as later chapters introduce each of these individually.
+
+---
+
+## 6. The Physical Process
 
 The **process** is the real, physical thing you are trying to control. It is not the technology — it is the world the technology is acting on.
 
@@ -103,7 +127,7 @@ Common physical quantities that get automated:
 | Speed | Motor, conveyor, pump |
 | Position | Robotic arm, valve actuator |
 
-**Worked example — the water tank:**
+We'll follow one simple example — a water tank — through the rest of this article.
 
 ```mermaid
 flowchart TD
@@ -114,127 +138,33 @@ flowchart TD
     E --> B
 ```
 
-Everything from here forward in this article uses the water tank as the running example, because it is simple enough to reason about completely, yet contains every element a factory-scale system has.
-
 ---
 
-## 6. Sensors — How the System Knows
+## 7. A Simple Real-World Example — The Water Tank
 
-A **sensor** is the component that converts a physical quantity into a signal the rest of the system can use.
+Walking the water tank through the four roles of the loop:
 
-For the water tank, this could be a **level sensor** — for example, an ultrasonic sensor that measures the distance from itself down to the water surface, or a float switch that physically rises and falls with the water.
-
-The critical thing a sensor does is **translate**:
-
-```
-Physical quantity (water level in cm)
-        ↓
-Physical effect (e.g., time for ultrasonic echo to return)
-        ↓
-Electrical signal (e.g., 4–20 mA or 0–10V)
-        ↓
-Value the controller can read
-```
-
-Without a sensor, "monitoring" is impossible — the controller has no way to know the current state of the physical world. This is why sensor accuracy, range, and response time are treated as critical specifications in real industrial design: a controller can never be more accurate than the information it's given.
-
----
-
-## 7. Decision and Control
-
-The **controller** is the component that takes the sensor's information and decides what action, if any, to take.
-
-For the water tank, the decision logic might be as simple as:
-
-```
-IF level < 20%  → turn pump ON  (fill the tank)
-IF level > 90%  → turn pump OFF (stop filling)
-ELSE            → do nothing
-```
-
-This simple ON/OFF logic is called **bang-bang control**. Real industrial controllers often use more refined logic (like PID control, which adjusts output proportionally rather than snapping fully on/off), but the *role* of the controller is identical in both cases: **take input, apply a decision rule, produce an output.**
-
-This is the step where "automation" truly separates itself from "mechanization" — a motor spinning a conveyor makes a decision *for* nothing; a controller comparing a sensor value to a setpoint makes an actual judgment call, autonomously, every scan cycle.
-
----
-
-## 8. Actuation — How the System Acts
-
-An **actuator** is the component that physically changes the process in response to the controller's decision. It's the controller's "hands."
-
-For the water tank: a **pump** (to add water) or a **valve** (to release water) are the actuators.
-
-```
-Controller decision: "turn pump ON"
-        ↓
-Output signal sent (e.g., 24V DC to a relay/contactor)
-        ↓
-Relay energizes
-        ↓
-Pump motor receives power
-        ↓
-Pump physically moves water
-        ↓
-Water level in tank rises
-```
-
-**Animation concept (for your GitHub visual):**
-> Water level falls → sensor detects the drop → PLC decides to start the pump → pump activates → water level rises → sensor detects the tank is full → PLC decides to stop the pump.
-
-This is the moment where an *electrical decision* becomes a *physical event* — the whole reason the automation system exists is to produce this final physical action correctly and on time.
-
----
-
-## 9. Feedback
-
-**Feedback** is what closes the loop. It's how the system verifies whether its own action actually produced the intended result.
+- **Sensor** — something (e.g., an ultrasonic sensor or float switch) measures the current water level and turns it into a signal the rest of the system can read. *Why it's needed:* without a sensor, the system has no way to know the real-world state at all — the exact mechanics of that conversion belong in the dedicated sensors chapter.
+- **Controller** — receives that signal and applies a decision rule, such as: *if level drops below 20%, turn the pump on; if it rises above 90%, turn the pump off.* At its core, a controller is nothing more than: **receives information → applies a decision rule → produces an action.** The deeper question of *how* that decision rule is designed (simple on/off logic vs. more refined approaches) belongs in the control-fundamentals chapter.
+- **Actuator** — the pump or valve that physically carries out the controller's decision, changing the real world in response to it.
+- **Feedback** — the sensor reading the tank again after the actuator has acted, so the system can confirm whether the level actually moved the way it should have — and correct course if not. This is what makes the system self-correcting rather than blind.
 
 ```mermaid
 flowchart LR
-    Sensor -->|reads new level| Controller
-    Controller -->|compares to setpoint| Controller
-    Controller -->|adjusts action if needed| Actuator
-    Actuator -->|changes process| Process
+    Sensor -->|reads level| Controller
+    Controller -->|applies decision rule| Controller
+    Controller -->|commands| Actuator
+    Actuator -->|changes| Process
     Process -->|new state| Sensor
 ```
 
-Without feedback, a system is "open-loop" — it acts blindly and has no way to know if the action worked, over-worked, or failed entirely (e.g., a stuck valve, a burnt-out pump). Feedback is what allows a system to *correct itself* instead of just *executing a command once and hoping*.
-
-This is the property that makes closed-loop automated systems fundamentally more reliable than simple mechanized ones.
+That's the entire loop, in one concrete example — no more detail than that is needed yet.
 
 ---
 
-## 10. Where the PLC Fits
+## 8. Where the Major Technologies Fit
 
-A **PLC (Programmable Logic Controller)** is the industrial-hardened computer that most commonly plays the role of "Controller" in the loop above.
-
-```mermaid
-flowchart TD
-    A[Sensor] --> B[Input Module]
-    B --> C[PLC CPU]
-    C --> D[Output Module]
-    D --> E[Actuator]
-    E --> F[Process]
-    F --> A
-```
-
-Tracing what physically happens at each arrow:
-
-1. **Sensor → Input Module**: The sensor outputs a real electrical signal — often 4–20 mA (analog) or a 24V DC ON/OFF signal (digital).
-2. **Input Module**: This signal is *conditioned* — filtered, isolated, and converted (analog signals go through an A/D converter) so the PLC's CPU can safely and accurately read it as a number.
-3. **Input Module → CPU**: The conditioned value is written into the PLC's internal memory as a data value (a register or bit).
-4. **CPU (scan cycle)**: The PLC continuously runs a repeating cycle — read all inputs → execute the user's logic program (e.g., ladder logic) → write all outputs — typically many times per second.
-5. **CPU → Output Module**: Based on the logic, the CPU sets an output bit/value in memory.
-6. **Output Module → Actuator**: This value is converted back into a real electrical signal (e.g., 24V DC to energize a relay or drive an analog output to a valve positioner).
-7. **Actuator → Process**: The physical actuator moves, and the real-world process changes as a result.
-
-The PLC, in other words, is not magic — it is simply a purpose-built device that sits in the "Decide" position of the fundamental loop, reading signals in, running logic, and writing signals out, on a fast, reliable, repeating cycle.
-
----
-
-## 11. From One Control Loop to an Industrial System
-
-A real factory is not one loop — it's thousands of these loops, layered into a hierarchy:
+In a real facility, this loop doesn't run on its own — it's implemented and supervised by a stack of technologies:
 
 ```mermaid
 flowchart TD
@@ -247,79 +177,69 @@ flowchart TD
     G --> H[ERP]
 ```
 
-NIST describes **Operational Technology (OT)** broadly as the systems and devices that interact with the physical environment through monitoring and control — which spans everything from a single sensor up through the SCADA layer. ISA's definition of automation covers this entire scope too — from the lowest-level loop to the top of the hierarchy.
+A **PLC (Programmable Logic Controller)** is simply one common, industrial-hardened implementation of the "Controller" role in the loop above. Above it, systems like SCADA, historians, and MES supervise many such loops across a whole site; ERP sits above all of that, managing business-level planning.
 
-Each layer up this stack does the same fundamental thing (sense → decide → act) but at a different scope and time scale:
-- **PLC** — controls a single machine or process, in milliseconds
-- **SCADA/HMI** — supervises many PLCs across a site, in seconds
-- **Historian/MES** — tracks production and quality trends, over hours/shifts
-- **ERP** — manages business-level planning, over days/weeks
+*How does a PLC actually receive, process, and produce these signals at the electrical level? How does SCADA differ from an HMI? We'll investigate each layer of this stack from the ground up in later chapters.*
 
-This article will only introduce this relationship — each layer deserves its own deep-dive article later in this series.
+**NIST** describes **Operational Technology (OT)** broadly as the systems and devices that interact with the physical environment through monitoring and control — a description that spans this entire stack, from a single sensor up through the top of it.
 
 ---
 
-## 12. Real-World Example — The Water Tank, Fully Automated
+## 9. First-Principles Mental Model
 
-Bringing every concept together in one system:
+Strip away every brand name, product, and acronym, and industrial automation is this:
 
-```mermaid
-sequenceDiagram
-    participant P as Physical Process (Tank)
-    participant S as Sensor (Level)
-    participant C as Controller (PLC)
-    participant Ac as Actuator (Pump)
-
-    P->>S: Water level drops to 20%
-    S->>C: Sends 4-20mA signal (low level)
-    C->>C: Compares to setpoint (logic: level < 20% → Pump ON)
-    C->>Ac: Sends 24V output signal
-    Ac->>P: Pump adds water, level rises
-    P->>S: Water level reaches 90%
-    S->>C: Sends signal (high level)
-    C->>C: Compares to setpoint (level > 90% → Pump OFF)
-    C->>Ac: Removes output signal
-    Ac->>P: Pump stops
-```
-
-Nothing here is guesswork or assumption — every step is a real, physical or electrical event, and the whole system is just the fundamental loop (Section 4) run continuously.
-
----
-
-## 13. First-Principles Mental Model
-
-Strip away every brand name, product, and acronym, and industrial automation is just this:
-
-> **A system that continuously knows the true state of a physical thing, compares that state to what it should be, and takes action to close the gap — without needing a human to do it manually, every time.**
+> **A field concerned with using technology, rather than continuous manual human effort, to monitor and control physical processes — most visibly through the sense → decide → act loop, but also through sequencing, interlocking, coordination, diagnostics, and supervisory functions built on top of it.**
 
 - The **sensor** answers: *"What is actually happening right now?"*
 - The **controller** answers: *"What should happen, and how do we get there?"*
 - The **actuator** answers: *"How do we physically make that happen?"*
 - **Feedback** answers: *"Did it actually work?"*
 
-Every PLC, SCADA system, robot, and industrial network that will appear later in this series is just a more elaborate way of answering these same four questions, faster, at larger scale, and with more variables.
+Every technology that appears later in this series — PLCs, SCADA, industrial networks, sensors, control algorithms — is a more elaborate way of implementing or supervising this same underlying idea.
 
 ---
 
-## 14. Key Takeaways
+## 10. Key Takeaways
 
-- Automation = **monitor** + **control**, applied by technology instead of a human.
+- At its core, automation uses technology to **monitor and/or control** physical processes, while also enabling functions such as sequencing, interlocking, coordination, diagnostics, and supervision.
 - Mechanization replaces **muscle**; automation replaces **judgment and reaction**.
-- Every automated system is built from the same loop: **Process → Sensor → Controller → Actuator → back to Process.**
-- A **PLC** is one specific, industrial-hardened implementation of the "Controller" role.
-- **Feedback** is what makes a system self-correcting instead of blind.
-- Real factories stack many of these loops into a hierarchy: **Process → I/O → PLC → Network → SCADA → Historian/MES → ERP.**
+- A large class of automated systems can be understood through: **Process → Sensor → Controller → Actuator → back to Process** — but not all automation is closed-loop, and automation is broader than feedback control alone (sequencing, interlocking, diagnostics, supervisory control, and more).
+- A **PLC** is one specific, industrial-hardened implementation of the "Controller" role — its internals are a topic of their own.
+- Real facilities stack many of these loops into a hierarchy: **Process → I/O → PLC → Network → SCADA → Historian/MES → ERP.**
 
 ---
 
-## 15. Questions for Further Investigation
+## 11. What We'll Learn Next
 
-These will seed the next articles in this series:
+This article deliberately stayed at the conceptual level. Each thread introduced here becomes its own dedicated chapter in `01-fundamentals/`:
+
+| # | Article | What it covers |
+|---|---|---|
+| 02 | History and Evolution of Industrial Automation | Where did it come from? |
+| 03 | Why Industrial Automation Exists | Safety, productivity, repeatability, quality, and the other drivers |
+| 04 | Industrial Processes and Systems | What exactly are we automating — continuous, batch, discrete? |
+| 05 | Measurement and Instrumentation Fundamentals | The general principles behind measuring a physical quantity |
+| 06 | Sensors and Transducers | The full physical-quantity → electrical-signal conversion path |
+| 07 | Signals and Data | How signals are represented, transmitted, and interpreted |
+| 08 | Analog vs Digital | The two fundamental signal types in industrial systems |
+| 09 | Actuators and Final Control Elements | How a decision becomes physical motion |
+| 10 | Open-Loop vs Closed-Loop | The distinction introduced in Section 4, properly explained |
+| 11 | Feedback and Control Fundamentals | How a controller's decision rule is actually designed (on/off, PID, and beyond) |
+| 12 | Control System Components | How sensors, controllers, and actuators fit together as a system |
+| 13 | Industrial I/O Fundamentals | Input/output modules, wiring, and conditioning |
+| 14 | PLC Fundamentals | Scan cycles, memory, ladder logic, and PLC internals |
+| 15 | Industrial Automation Architecture | The full I/O → PLC → Network → SCADA → MES → ERP stack, in depth |
+| 16 | Information and Data Flow | How data moves up and down the architecture |
+| 17 | A Real-World Automation System | A complete, end-to-end worked example |
+| 18 | Fundamental Mental Model | Tying the entire series back together |
+
+### Questions for Further Investigation
 
 1. What exactly is a "process" — how do we classify continuous vs. batch vs. discrete processes?
-2. How does an analog sensor signal (4–20 mA) actually get converted into a digital number inside a PLC?
-3. What is the difference between a PLC, a PAC, and a DCS — and when is each one used?
-4. What does a PLC's "scan cycle" actually look like internally (input scan, logic solve, output scan)?
+2. What's the actual difference between open-loop and closed-loop automation, and when is each used?
+3. How does an analog sensor signal (4–20 mA) actually get converted into a digital number inside a PLC?
+4. What is the difference between a PLC, a PAC, and a DCS — and when is each one used?
 5. How does PID control differ from simple ON/OFF (bang-bang) control?
 6. What industrial network protocols (Modbus, Profibus, EtherNet/IP) carry these signals between devices?
 7. What is the actual difference between SCADA and an HMI?
@@ -335,4 +255,4 @@ These will seed the next articles in this series:
 
 ---
 
-*DeepURForge Research Notebook — Article 01 of the Industrial Automation series. Next: "What Exactly Is a Process?"*
+*DeepURForge Research Notebook — Article 01 of the Industrial Automation series. Next: "02-history-and-evolution-of-industrial-automation.md"*
