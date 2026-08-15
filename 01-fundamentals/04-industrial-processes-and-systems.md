@@ -42,8 +42,8 @@ If you can't answer that clearly, every sensor, controller, and network you lear
 
 Strip away every sensor, screen, and controller, and a factory is still doing exactly one thing: **taking something in one physical state and turning it into something in a different, more useful state.**
 
-![Raw material entering a steel mill](https://upload.wikimedia.org/wikipedia/commons/d/d1/Steel_mill_in_Lorain.jpg)
-*Iron ore and coke go in; steel comes out. No PLC, sensor, or network changes that basic transformation — they only make it faster, safer, and more consistent. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Steel_mill_in_Lorain.jpg))*
+![Raw material through a furnace to product](diagrams/img-steel-process.png)
+*Ore in, steel out — the transformation at the center of any process, illustrated simply.*
 
 ```
 Raw Material → Physical Process → Transformation → Product
@@ -148,8 +148,8 @@ Symmetrically, a process can produce:
 
 This is where the chapter starts pointing directly at what automation engineers actually spend their time observing and manipulating.
 
-![High-pressure manometer — a physical variable made readable](https://upload.wikimedia.org/wikipedia/commons/7/74/MAXIMATOR-High-Pressure-Manometer-01a.jpg)
-*A pressure gauge — one physical variable, made visible. Every variable in the table below eventually has to become a number a controller can read, the same way this dial makes it a number a person can read. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:MAXIMATOR-High-Pressure-Manometer-01a.jpg), CC BY-SA 3.0)*
+![A pressure gauge — one physical variable made readable](diagrams/img-pressure-gauge.png)
+*Every variable in the table below eventually has to become a number a controller can read, the same way this dial makes it a number a person can read.*
 
 | Category | Core Variables |
 |---|---|
@@ -196,8 +196,8 @@ Three terms that will appear constantly starting in the control-theory chapters 
 | **Manipulated Variable (MV)** | What the controller actually changes | Valve opening = 45% |
 | **Disturbance** | Something that changes the process without being the intended control action | A sudden increase in outlet flow |
 
-![Electric valve actuator — the manipulated variable, physically](https://upload.wikimedia.org/wikipedia/commons/d/db/Electric_valve_actuator.jpg)
-*This is what a manipulated variable looks like in the real world — the one thing the controller is actually allowed to touch. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Electric_valve_actuator.jpg))*
+![A valve driven by an actuator — the manipulated variable, physically](diagrams/img-valve-actuator.png)
+*This is what a manipulated variable looks like in the real world — the one thing the controller is actually allowed to touch.*
 
 Notice the asymmetry: the controller never touches the controlled variable directly. It can't reach into the tank and move the water level by hand. It can only adjust the manipulated variable — the valve — and *hope*, based on a correct understanding of the process, that adjusting the valve produces the desired change in level. That gap between "what I want to control" and "what I'm actually allowed to touch" is the central engineering problem of every control loop you'll study later.
 
@@ -249,8 +249,8 @@ Controller → Output signal → Drive / valve / actuator → Physical action �
 
 Common actuators: motors, valves, heaters, cylinders, solenoids, drives.
 
-![CNC machine — a controller's decisions becoming physical motion](https://upload.wikimedia.org/wikipedia/commons/f/f0/CNC_Mill_1.jpg)
-*Every actuator is the same idea at different scales: an electrical decision becoming a physical action. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CNC_Mill_1.jpg), CC BY-SA 4.0)*
+![A CNC machine — a controller's decisions becoming physical motion](diagrams/img-cnc-machine.png)
+*Every actuator is the same idea at different scales: an electrical decision becoming a physical action.*
 
 Put measurement and actuation side by side, and the complete information loop of every automated system becomes visible:
 
@@ -298,8 +298,8 @@ Not every process runs the same way over time. Four broad categories cover almos
 
 Material flows in and product flows out, essentially without interruption.
 
-![Oil refinery — a continuous process running around the clock](https://upload.wikimedia.org/wikipedia/commons/2/29/Oil_refinery_in_Martinez%2C_California.JPG)
-*Material in, product out, without interruption — stopping and restarting a process like this is both expensive and hazardous. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Oil_refinery_in_Martinez,_California.JPG), CC BY-SA 4.0)*
+![A continuous process — material flowing through in an unbroken sequence](diagrams/img-continuous-process.png)
+*Material in, product out, without interruption — stopping and restarting a process like this is both expensive and hazardous.*
 
 ```
 Material →→→ Process →→→ Product
@@ -315,15 +315,15 @@ A defined quantity is processed as a discrete "batch," start to finish, before t
 Load → Process → Hold → Unload
 ```
 
-![Industrial planetary mixer — a batch process in progress](https://upload.wikimedia.org/wikipedia/commons/4/40/Industrial_planetary_mixer.jpg)
-*Mixing 1,000 L of a chemical to a fixed recipe — load, process, hold, unload, then start the next batch. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Industrial_planetary_mixer.jpg))*
+![A batch mixer — load, process, hold, unload](diagrams/img-batch-mixer.png)
+*Mixing a fixed recipe to a target volume — load, process, hold, unload, then start the next batch.*
 
 ### C. Discrete processes
 
 Individual, countable units move through distinct stages.
 
-![Ford assembly line — discrete units moving through distinct stages](https://upload.wikimedia.org/wikipedia/commons/2/29/Ford_assembly_line_-_1913.jpg)
-*Each unit here is a separate, trackable item, moving through part → assembly → inspection → packaging. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ford_assembly_line_-_1913.jpg), public domain)*
+![A discrete assembly line — countable units moving through distinct stages](diagrams/img-discrete-line.png)
+*Each unit here is a separate, trackable item, moving through part → assembly → inspection → packaging.*
 
 ```
 Part → Assembly → Inspection → Packaging
@@ -413,8 +413,8 @@ Each arrow in that chain is an interface — a defined, agreed-upon way for one 
 
 Every concept in this chapter, tied together in one deliberately simple case study.
 
-![Water treatment tanks — the same tank-level principle, at industrial scale](https://upload.wikimedia.org/wikipedia/commons/5/5a/Waste_Water_Treatment_Plant.jpg)
-*Real water treatment infrastructure — underneath the scale and complexity, the same tank-and-valve loop below is doing the core work. (Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Waste_Water_Treatment_Plant.jpg), CC BY-SA 4.0)*
+![Water treatment tanks — the same tank-level principle, at industrial scale](diagrams/img-water-tanks.png)
+*Real water treatment infrastructure is built from exactly this pattern — underneath the scale, the same tank-and-valve loop below is doing the core work.*
 
 ![Complete water tank system: water in, valve, tank, pump, water out, with level sensor and PLC closing the control loop back to the valve](diagrams/20-tank-system-complete.png)
 
@@ -481,3 +481,47 @@ Chapter 05 picks up exactly where Section 11 of this chapter left off: **how do 
 - Wikimedia Commons — photographs credited individually above each image.
 
 ---
+
+## Suggested Repository Structure for This Chapter
+
+```
+industrial-automation-from-first-principles/
+│
+├── README.md
+│
+└── 01-fundamentals/
+    ├── 01-what-is-industrial-automation.md
+    ├── 02-where-did-industrial-automation-begin-history.md
+    ├── 03-why-industrial-automation-exists.md
+    ├── 04-industrial-processes-and-systems.md
+    └── diagrams/
+        ├── 02-process-machine-system.png
+        ├── 04-universal-structure.png
+        ├── 10-disturbance-loop.png
+        ├── 14-closed-loop.png
+        ├── 20-tank-system-complete.png
+        ├── 21-master-model.png
+        ├── img-steel-process.png
+        ├── img-pressure-gauge.png
+        ├── img-valve-actuator.png
+        ├── img-cnc-machine.png
+        ├── img-continuous-process.png
+        ├── img-batch-mixer.png
+        ├── img-discrete-line.png
+        └── img-water-tanks.png
+```
+
+**⚠️ All 14 images are now local files — every one requires the upload step below. There are no more external links to break.**
+
+This chapter no longer hot-links anything from Wikimedia. After three rounds of broken external images, every single visual — the 6 technical diagrams and the 8 topic illustrations — is now a file I generated myself, verified by actually looking at each one, with zero dependency on an outside server. The tradeoff: these are clean illustrations, not real photographs. If you'd still like real photography for any of these 8 spots, upload your own photos into `diagrams/` under the same filenames and they'll drop right in.
+
+**Exact steps to make the images show up on GitHub:**
+
+1. Download and unzip `04-diagrams.zip` (provided alongside this file) — you'll get one folder named `diagrams` containing all 14 PNGs.
+2. On GitHub, go to your `01-fundamentals` folder (the same folder `04-industrial-processes-and-systems.md` is in).
+3. Click **Add file → Upload files**.
+4. Drag the entire `diagrams` folder into the upload box. GitHub will preserve the folder structure automatically.
+5. Commit the upload.
+6. Open `04-industrial-processes-and-systems.md` on GitHub again — all 14 images should now render.
+
+The single most common failure is uploading the `diagrams` folder into the *repository root* instead of *inside* `01-fundamentals/`. The folder must sit in the same directory as the `.md` file, not one level up or down from it.
