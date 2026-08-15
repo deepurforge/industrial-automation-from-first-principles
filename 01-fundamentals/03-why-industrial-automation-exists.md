@@ -1,6 +1,6 @@
 # Why Does Industrial Automation Exist?
 
-[📄👾 Open Interactive Article 02](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/02-where-did-industrial-automation-begin-history-2.html)
+[📄👾 Open Interactive Article 02](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/03-why-industrial-automation-exists-2.html)
 
 > If humans can operate machines, why do we need PLCs, sensors, control systems, robots, and networks at all?
 
