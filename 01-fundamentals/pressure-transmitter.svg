@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="900" height="500" fill="#f8fafc"/>
+  <text x="450" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">Pressure Transmitter — Diaphragm Sensing</text>
+
+  <!-- Process pipe -->
+  <rect x="60" y="220" width="160" height="50" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+  <text x="140" y="210" text-anchor="middle" font-size="13" font-weight="bold">Process</text>
+
+  <!-- impulse line -->
+  <line x1="220" y1="245" x2="320" y2="245" stroke="#334155" stroke-width="6"/>
+
+  <!-- Diaphragm housing -->
+  <rect x="320" y="180" width="120" height="130" rx="10" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <ellipse cx="380" cy="245" rx="10" ry="45" fill="none" stroke="#dc2626" stroke-width="4"/>
+  <text x="380" y="330" text-anchor="middle" font-size="12" font-weight="bold">Diaphragm</text>
+
+  <!-- Sensing element -->
+  <rect x="460" y="205" width="110" height="80" rx="8" fill="#fef08a" stroke="#854d0e" stroke-width="2"/>
+  <text x="515" y="235" text-anchor="middle" font-size="12" font-weight="bold">Piezoresistive</text>
+  <text x="515" y="252" text-anchor="middle" font-size="12" font-weight="bold">/ Capacitive</text>
+  <text x="515" y="269" text-anchor="middle" font-size="12" font-weight="bold">element</text>
+
+  <line x1="440" y1="245" x2="460" y2="245" stroke="#334155" stroke-width="3" marker-end="url(#pa)"/>
+
+  <!-- Electronics -->
+  <rect x="610" y="200" width="150" height="90" rx="8" fill="#bbf7d0" stroke="#166534" stroke-width="2"/>
+  <text x="685" y="235" text-anchor="middle" font-size="12" font-weight="bold">Amplify /</text>
+  <text x="685" y="255" text-anchor="middle" font-size="12" font-weight="bold">Linearize /</text>
+  <text x="685" y="275" text-anchor="middle" font-size="12" font-weight="bold">Compensate</text>
+
+  <line x1="570" y1="245" x2="608" y2="245" stroke="#334155" stroke-width="3" marker-end="url(#pa)"/>
+
+  <defs>
+    <marker id="pa" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="685" y="330" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Output: 4–20 mA / HART</text>
+
+  <text x="450" y="410" text-anchor="middle" font-size="15" fill="#334155">Gauge · Absolute · Differential — same core sensing principle, different reference point</text>
+  <text x="450" y="460" text-anchor="middle" fill="#475569" font-size="15" font-style="italic">
+    Figure 8 — Pressure deflects a diaphragm; the sensing element converts that deflection into an electrical signal.
+  </text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 550" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="900" height="550" fill="#f8fafc"/>
+  <text x="450" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">Strain Gauge in a Wheatstone Bridge</text>
+
+  <!-- load cell body -->
+  <rect x="80" y="120" width="220" height="70" rx="10" fill="#cbd5e1" stroke="#334155" stroke-width="3"/>
+  <text x="190" y="105" text-anchor="middle" font-size="13" font-weight="bold">Load Cell Body</text>
+  <line x1="120" y1="145" x2="260" y2="145" stroke="#dc2626" stroke-width="3"/>
+  <line x1="120" y1="165" x2="260" y2="165" stroke="#dc2626" stroke-width="3"/>
+  <text x="190" y="215" text-anchor="middle" font-size="12">Bonded strain gauges (×4)</text>
+
+  <path d="M190,120 L190,80" stroke="#0f172a" stroke-width="4" marker-end="url(#down)"/>
+  <text x="190" y="65" text-anchor="middle" font-size="13" font-weight="bold">Applied Force (F)</text>
+
+  <defs>
+    <marker id="down" markerWidth="10" markerHeight="10" refX="5" refY="8" orient="auto">
+      <path d="M0,0 L10,0 L5,10 Z" fill="#0f172a"/>
+    </marker>
+  </defs>
+
+  <!-- Bridge diamond -->
+  <g transform="translate(480,260)">
+    <polygon points="120,0 240,120 120,240 0,120" fill="none" stroke="#334155" stroke-width="3"/>
+    <text x="115" y="-15" text-anchor="middle" font-size="12" font-weight="bold">+Excitation</text>
+    <text x="115" y="270" text-anchor="middle" font-size="12" font-weight="bold">−Excitation</text>
+    <text x="-40" y="125" text-anchor="middle" font-size="12" font-weight="bold">−Signal</text>
+    <text x="270" y="125" text-anchor="middle" font-size="12" font-weight="bold">+Signal</text>
+
+    <!-- resistor zigzags on each side -->
+    <path d="M120,10 L100,30 L140,50 L100,70 L120,90" stroke="#dc2626" stroke-width="3" fill="none"/>
+    <path d="M230,120 L210,100 L230,80 L210,60 L230,40" stroke="#dc2626" stroke-width="3" fill="none" transform="translate(0,10)"/>
+    <path d="M120,230 L100,210 L140,190 L100,170 L120,150" stroke="#dc2626" stroke-width="3" fill="none"/>
+    <path d="M10,120 L30,100 L10,80 L30,60 L10,40" stroke="#dc2626" stroke-width="3" fill="none" transform="translate(0,10)"/>
+
+    <circle cx="120" cy="120" r="4" fill="#0f172a"/>
+  </g>
+
+  <line x1="300" y1="150" x2="480" y2="260" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <text x="450" y="480" text-anchor="middle" font-size="14" fill="#334155">ΔR/R = GF · ε   —   tiny resistance changes become a measurable bridge output voltage</text>
+  <text x="450" y="520" text-anchor="middle" fill="#475569" font-size="15" font-style="italic">
+    Figure 10 — Four strain gauges in a bridge amplify sensitivity and cancel common-mode temperature drift.
+  </text>
+</svg>
