@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Industrial Processes and Systems — Interactive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --bg-raise:#12151a;
+    --ink:#eeece6;
+    --ink-dim:#9b988f;
+    --ink-faint:#6b6a64;
+    --line:rgba(238,236,230,.10);
+    --line-strong:rgba(238,236,230,.20);
+
+    --process:#eeece6;   /* neutral / process */
+    --sensor:#0891b2;    /* cyan */
+    --controller:#2563eb;/* blue */
+    --actuator:#d97706;  /* amber */
+    --disturbance:#dc2626;/* red */
+    --io:#16a34a;        /* green */
+    --info:#7c3aed;      /* purple */
+
+    --acc: var(--controller);
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--acc); color:#0b0d10; }
+  a{ color:inherit; }
+
+  #progressBar{ position:fixed; top:0; left:0; height:3px; width:0%; background:var(--acc); z-index:100; transition:width .1s linear, background .4s ease; }
+
+  .rail{
+    position:fixed; top:0; left:0; bottom:0; width:76px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    z-index:90; border-right:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(11,13,16,.6), rgba(11,13,16,.9)); backdrop-filter:blur(6px);
+  }
+  .rail-item{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:9.5px; color:var(--ink-faint);
+    cursor:pointer; background:transparent; transition:all .25s ease; position:relative;
+  }
+  .rail-item:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .rail-item.active{ color:var(--bg); background:var(--dot, var(--acc)); border-color:var(--dot, var(--acc)); font-weight:600; transform:scale(1.12); }
+  .rail-line{ position:absolute; left:50%; top:100%; width:1px; height:5px; background:var(--line-strong); transform:translateX(-50%); }
+  .rail-item:last-child .rail-line{ display:none; }
+  @media (max-width: 860px){ .rail{ display:none; } }
+
+  main{ max-width:760px; margin:0 auto; padding:0 28px 140px 28px; }
+  @media (min-width:861px){ main{ padding-left:96px; padding-right:40px; } }
+
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--dot, var(--acc)); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::before{ content:''; width:22px; height:1px; background:var(--dot, var(--acc)); display:inline-block; }
+
+  h1,h2,h3{ font-family:var(--font-display); font-weight:600; letter-spacing:-0.01em; color:var(--ink); margin:0 0 .5em 0; }
+  h2{ font-size:clamp(25px,3.2vw,34px); }
+  p{ color:#d7d5cd; margin:0 0 1em 0; }
+  .lede{ color:var(--ink-dim); font-size:17px; }
+  .divider{ height:1px; background:var(--line); margin:88px 0 60px 0; }
+
+  /* ---------- hero ---------- */
+  .hero{ min-height:94vh; display:flex; flex-direction:column; justify-content:center; padding:110px 0 60px 0; position:relative; }
+  .hero .kicker{ font-family:var(--font-mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:22px; }
+  .hero h1{ font-size:clamp(32px,5.4vw,56px); line-height:1.08; max-width:820px; }
+  .hero h1 em{ font-style:normal; background:linear-gradient(90deg,var(--sensor),var(--controller),var(--actuator),var(--disturbance)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero .sub{ max-width:600px; color:var(--ink-dim); font-size:17px; margin-top:18px; }
+
+  .scroll-cue{ margin-top:52px; font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); display:flex; align-items:center; gap:10px; }
+  .scroll-cue .bar{ width:1px; height:28px; background:var(--ink-faint); position:relative; overflow:hidden; }
+  .scroll-cue .bar::after{ content:''; position:absolute; left:0; top:-100%; width:100%; height:100%; background:var(--ink); animation:cue 1.6s ease-in-out infinite; }
+  @keyframes cue{ 50%{ top:100%; } 100%{ top:100%; } }
+
+  /* ---------- signature: open vs closed loop sim ---------- */
+  .sig-wrap{ margin-top:44px; border:1px solid var(--line); border-radius:16px; padding:26px; background:radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.03), transparent 60%), var(--bg-raise); }
+  .sig-toggle{ display:flex; gap:8px; margin-bottom:20px; }
+  .sig-btn{
+    font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    background:transparent; border:1px solid var(--line-strong); color:var(--ink-dim);
+    padding:9px 16px; border-radius:999px; cursor:pointer; transition:all .25s ease;
+  }
+  .sig-btn.active{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
+  .sig-chart{ width:100%; height:170px; display:block; }
+  .sig-caption{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim); margin-top:14px; line-height:1.7; }
+  .sig-caption b{ color:var(--ink); }
+
+  /* ---------- section shell ---------- */
+  .sect{ padding-top:8px; scroll-margin-top:40px; }
+  .sect .index{ font-family:var(--font-mono); font-size:52px; font-weight:600; color:transparent; -webkit-text-stroke:1px var(--line-strong); line-height:1; margin-bottom:8px; }
+
+  .panel{
+    margin:30px 0 8px 0; border:1px solid var(--line); border-radius:14px;
+    background:radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.03), transparent 60%), var(--bg-raise);
+    padding:26px; overflow:hidden; opacity:0; transform:translateY(16px); transition:opacity .7s ease, transform .7s ease;
+  }
+  .panel.in{ opacity:1; transform:translateY(0); }
+  .panel-label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:16px; }
+
+  .key-points{ list-style:none; padding:0; margin:18px 0; }
+  .key-points li{ position:relative; padding-left:22px; margin-bottom:9px; color:#d7d5cd; font-size:14.5px; }
+  .key-points li::before{ content:''; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--dot, var(--acc)); }
+
+  .callout{ border-left:2px solid var(--dot, var(--acc)); padding:4px 0 4px 18px; margin:20px 0; color:var(--ink-dim); font-size:14.5px; }
+  .callout b{ color:var(--ink); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:18px 0; }
+  th,td{ text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); }
+  th{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); font-weight:500; }
+  td{ color:#d7d5cd; }
+
+  .loop-node-label{ font-family:var(--font-mono); font-size:9px; fill:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em; }
+  .loop-track{ fill:none; stroke:var(--line-strong); stroke-width:1.5; }
+  .loop-node{ fill:var(--bg-raise); stroke:var(--line-strong); stroke-width:1.5; }
+  .loop-node.on{ stroke:var(--controller); }
+  .loop-dot{ fill:var(--controller); filter:drop-shadow(0 0 6px var(--controller)); }
+
+  /* ---------- s1: transformation ---------- */
+  .xform-wrap{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .xform-box{ flex:1; text-align:center; padding:18px 6px; border:1px solid var(--line); border-radius:10px; }
+  .xform-box .glyph{ font-size:24px; margin-bottom:8px; }
+  .xform-arrow{ color:var(--ink-faint); font-family:var(--font-mono); }
+  .xform-morph{ animation:morphPulse 2.4s ease-in-out infinite; }
+  @keyframes morphPulse{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+
+  /* ---------- s3: purpose cycler ---------- */
+  .purpose-wrap{ display:flex; flex-wrap:wrap; gap:10px; }
+  .purpose-chip{ font-family:var(--font-mono); font-size:11px; padding:8px 14px; border-radius:999px; border:1px solid var(--line-strong); color:var(--ink-dim); opacity:.4; transition:all .4s ease; }
+  .purpose-chip.active{ opacity:1; color:var(--bg); background:var(--dot,var(--acc)); border-color:var(--dot,var(--acc)); }
+
+  /* ---------- s4: core structure pulse ---------- */
+  .core-pulse{ animation-timing-function:linear; }
+
+  /* ---------- s7: multi gauge ---------- */
+  .gauge-row{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .gauge-item{ text-align:center; }
+  .gauge-svg{ width:100px; height:70px; }
+  .gauge-lbl{ font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); margin-top:6px; text-transform:uppercase; }
+  .gauge-needle{ transform-origin:50px 60px; transition:transform .5s cubic-bezier(.4,0,.2,1); }
+
+  /* ---------- s8: state readout ---------- */
+  .state-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .state-tile{ border:1px solid var(--line); border-radius:8px; padding:12px; text-align:center; }
+  .state-tile .lbl{ font-family:var(--font-mono); font-size:9px; color:var(--ink-faint); text-transform:uppercase; margin-bottom:6px; }
+  .state-tile .val{ font-family:var(--font-mono); font-size:18px; color:var(--sensor); font-weight:600; }
+  @media (max-width:520px){ .state-grid{ grid-template-columns:repeat(2,1fr); } }
+
+  /* ---------- s9: cv/mv diagram ---------- */
+  .cvmv-tag{ font-family:var(--font-mono); font-size:9px; padding:3px 8px; border-radius:4px; }
+  .tag-cv{ background:rgba(220,38,38,.15); color:#f87171; border:1px solid rgba(220,38,38,.4); }
+  .tag-mv{ background:rgba(217,119,6,.15); color:#fbbf24; border:1px solid rgba(217,119,6,.4); }
+
+  /* ---------- s10: disturbance ---------- */
+  .dist-pulse{ animation:distMove 3.2s ease-in-out infinite; }
+  @keyframes distMove{ 0%{ offset-distance:0%; opacity:0;} 8%{opacity:1;} 92%{opacity:1;} 100%{ offset-distance:100%; opacity:0;} }
+
+  /* ---------- s11/12: chain pulse ---------- */
+  .chain-pulse{ animation:chainMove 2.6s linear infinite; }
+  @keyframes chainMove{ 0%{ offset-distance:0%; opacity:0;} 6%{opacity:1;} 94%{opacity:1;} 100%{ offset-distance:100%; opacity:0;} }
+
+  /* ---------- s13/14: open vs closed mini ---------- */
+  .mini-chart{ width:100%; height:90px; }
+
+  /* ---------- s15: process type tabs ---------- */
+  .type-tabs{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .type-tab{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; padding:8px 14px; border-radius:999px; border:1px solid var(--line-strong); background:transparent; color:var(--ink-dim); cursor:pointer; transition:all .25s ease; }
+  .type-tab.active{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
+  .type-view{ display:none; }
+  .type-view.active{ display:block; }
+  .continuous-flow{ animation:flowMove 2s linear infinite; }
+  @keyframes flowMove{ 0%{ offset-distance:0%; } 100%{ offset-distance:100%; } }
+  .batch-stage{ opacity:.3; transition:opacity .4s ease; }
+  .batch-stage.active{ opacity:1; }
+  .discrete-unit{ animation:discreteMove 3.5s linear infinite; }
+  @keyframes discreteMove{ 0%{ offset-distance:0%; opacity:0;} 5%{opacity:1;} 95%{opacity:1;} 100%{ offset-distance:100%; opacity:0;} }
+
+  /* ---------- s16: scaling zoom ---------- */
+  .scale-stack{ display:flex; flex-direction:column; gap:6px; }
+  .scale-row{ padding:9px 14px; border:1px solid var(--line); border-radius:6px; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); opacity:0; transform:translateX(-10px); }
+  .panel.in .scale-row{ animation:scaleIn .5s forwards; }
+  .scale-row:nth-child(1){ animation-delay:.05s; } .scale-row:nth-child(2){ animation-delay:.15s; }
+  .scale-row:nth-child(3){ animation-delay:.25s; } .scale-row:nth-child(4){ animation-delay:.35s; }
+  .scale-row:nth-child(5){ animation-delay:.45s; } .scale-row:nth-child(6){ animation-delay:.55s; }
+  .scale-row:nth-child(7){ animation-delay:.65s; }
+  @keyframes scaleIn{ to{ opacity:1; transform:translateX(0);} }
+
+  /* ---------- s17: subsystem fault propagation ---------- */
+  .fault-node{ transition:all .4s ease; }
+  .fault-node.hit{ filter:drop-shadow(0 0 8px var(--disturbance)); }
+
+  /* ---------- s18: boundary toggle ---------- */
+  .boundary-toggle-wrap{ text-align:center; }
+  .boundary-btn{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; background:transparent; border:1px solid var(--line-strong); color:var(--ink); padding:9px 16px; border-radius:999px; cursor:pointer; margin-bottom:18px; transition:all .25s ease; }
+  .boundary-btn:hover{ border-color:var(--info); color:var(--info); }
+  .boundary-rect{ transition:all .6s cubic-bezier(.4,0,.2,1); }
+
+  /* ---------- s19: interface packets ---------- */
+  .iface-pulse{ animation:ifaceMove 3s linear infinite; }
+  @keyframes ifaceMove{ 0%{ offset-distance:0%; opacity:0;} 6%{opacity:1;} 94%{opacity:1;} 100%{ offset-distance:100%; opacity:0;} }
+
+  /* ---------- s20: tank capstone ---------- */
+  .tank-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; }
+  @media (max-width:640px){ .tank-wrap{ grid-template-columns:1fr; } }
+  #tankWaterC{ transition:height .5s ease, y .5s ease; }
+  #tankValveC{ transition:width .5s ease, x .5s ease; }
+  .trend-svg{ width:100%; height:120px; }
+  .tank-readout{ font-family:var(--font-mono); font-size:12px; display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:8px; margin-top:8px; }
+  .tank-readout span:last-child{ color:var(--sensor); }
+
+  /* ---------- s21: master model build ---------- */
+  .master-node{ opacity:0; transition:opacity .5s ease; }
+  .panel.in .master-node{ opacity:1; }
+
+  /* ---------- s22: summary ---------- */
+  .check-list{ list-style:none; padding:0; margin:0; }
+  .check-list li{ display:flex; gap:10px; align-items:flex-start; padding:7px 0; opacity:0; transform:translateX(-8px); }
+  .panel.in .check-list li{ animation:checkIn .5s forwards; }
+  .check-list li:nth-child(n){ animation-delay:calc(.05s * var(--i)); }
+  @keyframes checkIn{ to{ opacity:1; transform:translateX(0);} }
+  .check-mark{ color:var(--io); font-family:var(--font-mono); flex-shrink:0; }
+
+  footer{ margin-top:100px; padding-top:40px; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); line-height:2; }
+  footer a{ color:var(--ink-dim); }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div id="progressBar"></div>
+<nav class="rail" id="rail" aria-label="Chapter navigation"></nav>
+
+<main>
+
+  <!-- ============ HERO / SIGNATURE ============ -->
+  <header class="hero" id="top">
+    <div class="kicker">DeepURForge — 04 · First Principles</div>
+    <h1>What are we actually <em>automating</em>?</h1>
+    <p class="sub">Before sensors, PLCs, or networks — every industrial system reduces to one loop. Toggle the switch below and watch what happens when that loop is missing one single arrow.</p>
+
+    <div class="sig-wrap">
+      <div class="sig-toggle">
+        <button class="sig-btn active" id="btnOpen">Open loop — no feedback</button>
+        <button class="sig-btn" id="btnClosed">Closed loop — with feedback</button>
+      </div>
+      <svg class="sig-chart" viewBox="0 0 600 170" preserveAspectRatio="none">
+        <line x1="0" y1="85" x2="600" y2="85" stroke="var(--line-strong)" stroke-dasharray="3 5"/>
+        <text x="8" y="78" class="loop-node-label">SETPOINT</text>
+        <polyline id="sigTrace" fill="none" stroke="var(--disturbance)" stroke-width="2.5" points=""/>
+        <g id="sigDistMarkers"></g>
+      </svg>
+      <div class="sig-caption" id="sigCaption">
+        <b>Open loop:</b> a disturbance hits at a random moment and the process just... stays wrong. Nothing is watching, so nothing corrects it.
+      </div>
+    </div>
+
+    <div class="scroll-cue"><div class="bar"></div>Scroll to explore</div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section class="sect" id="s1" data-acc="process" data-title="What Is a Process">
+    <div class="index">01</div>
+    <div class="eyebrow">The ground floor</div>
+    <h2>What is an industrial process?</h2>
+    <p class="lede">Strip away every sensor and controller, and a factory is still doing one thing: taking something in one physical state and turning it into something more useful.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — the transformation, in its simplest form</div>
+      <div class="xform-wrap">
+        <div class="xform-box"><div class="glyph">⬡</div>Raw Material</div>
+        <div class="xform-arrow">→</div>
+        <div class="xform-box xform-morph"><div class="glyph">⚙</div>Physical Process</div>
+        <div class="xform-arrow">→</div>
+        <div class="xform-box"><div class="glyph">◆</div>Product</div>
+      </div>
+      <div class="callout">Automation doesn't replace this transformation — it sits around it, watching and steering it.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 2 ============ -->
+  <section class="sect" id="s2" data-acc="controller" data-title="Process vs System">
+    <div class="index">02</div>
+    <div class="eyebrow">Vocabulary that matters</div>
+    <h2>Process vs. machine vs. system</h2>
+    <p class="lede">A machine can exist without a system. A process can exist without either.</p>
+    <div class="panel">
+      <div class="panel-label">Diagram — a system decomposed</div>
+      <svg viewBox="0 0 300 180" style="width:100%; height:auto;">
+        <rect x="105" y="10" width="90" height="34" rx="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.8"/>
+        <text x="150" y="31" text-anchor="middle" class="loop-node-label" style="fill:var(--controller);">SYSTEM</text>
+        <rect x="10" y="90" width="80" height="34" rx="6" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.6"/>
+        <text x="50" y="111" text-anchor="middle" class="loop-node-label">MACHINE</text>
+        <rect x="110" y="90" width="80" height="34" rx="6" fill="var(--bg)" stroke="var(--sensor)" stroke-width="1.6"/>
+        <text x="150" y="111" text-anchor="middle" class="loop-node-label">SENSORS</text>
+        <rect x="210" y="90" width="80" height="34" rx="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/>
+        <text x="250" y="111" text-anchor="middle" class="loop-node-label">CONTROL</text>
+        <rect x="10" y="150" width="80" height="28" rx="6" fill="var(--bg)" stroke="var(--line-strong)" stroke-width="1.6"/>
+        <text x="50" y="168" text-anchor="middle" class="loop-node-label">PROCESS</text>
+        <path d="M130,44 L50,90" stroke="var(--line-strong)" fill="none" marker-end="url(#arrow2)"/>
+        <path d="M150,44 L150,90" stroke="var(--line-strong)" fill="none" marker-end="url(#arrow2)"/>
+        <path d="M170,44 L250,90" stroke="var(--line-strong)" fill="none" marker-end="url(#arrow2)"/>
+        <path d="M50,124 L50,150" stroke="var(--line-strong)" fill="none" marker-end="url(#arrow2)"/>
+        <defs><marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--line-strong)"/></marker></defs>
+      </svg>
+      <div class="callout">The moment a sensor and a controller start deciding what a machine does, you have a <b>system</b> — not before.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 3 ============ -->
+  <section class="sect" id="s3" data-acc="actuator" data-title="Process Purpose">
+    <div class="index">03</div>
+    <div class="eyebrow">Ask this first</div>
+    <h2>Every process has a purpose</h2>
+    <p class="lede">Before any sensor or control loop matters, ask what this process is actually trying to accomplish.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — purposes, cycling</div>
+      <div class="purpose-wrap" id="purposeWrap">
+        <div class="purpose-chip">Heat</div><div class="purpose-chip">Move</div><div class="purpose-chip">Mix</div>
+        <div class="purpose-chip">Separate</div><div class="purpose-chip">Form</div><div class="purpose-chip">Cut</div>
+        <div class="purpose-chip">Transport</div><div class="purpose-chip">Generate</div>
+      </div>
+      <p style="font-size:13px; color:var(--ink-dim); margin-top:16px;">The purpose determines everything downstream — which variables need watching, what sensor is appropriate, what "success" even means.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 4 ============ -->
+  <section class="sect" id="s4" data-acc="controller" data-title="Universal Structure">
+    <div class="index">04</div>
+    <div class="eyebrow">The foundation</div>
+    <h2>The universal structure of a process</h2>
+    <p class="lede">Almost every industrial process, regardless of industry, reduces to this shape.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — disturbances and control action both acting on the process</div>
+      <svg viewBox="0 0 300 180" style="width:100%; height:auto;">
+        <rect x="105" y="70" width="90" height="50" rx="8" fill="var(--bg)" stroke="var(--process)" stroke-width="1.8"/>
+        <text x="150" y="99" text-anchor="middle" class="loop-node-label" style="font-size:11px;">PROCESS</text>
+        <rect x="10" y="80" width="75" height="30" rx="6" fill="var(--bg)" stroke="var(--io)" stroke-width="1.6"/>
+        <text x="47" y="99" text-anchor="middle" class="loop-node-label">INPUT</text>
+        <rect x="215" y="80" width="75" height="30" rx="6" fill="var(--bg)" stroke="var(--io)" stroke-width="1.6"/>
+        <text x="252" y="99" text-anchor="middle" class="loop-node-label">OUTPUT</text>
+        <rect x="95" y="10" width="110" height="30" rx="6" fill="var(--bg)" stroke="var(--disturbance)" stroke-width="1.6"/>
+        <text x="150" y="29" text-anchor="middle" class="loop-node-label">DISTURBANCES</text>
+        <rect x="90" y="140" width="120" height="30" rx="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/>
+        <text x="150" y="159" text-anchor="middle" class="loop-node-label">CONTROL ACTION</text>
+        <path d="M85,95 L105,95" stroke="var(--io)" fill="none" marker-end="url(#arrow4)"/>
+        <path d="M195,95 L215,95" stroke="var(--io)" fill="none" marker-end="url(#arrow4)"/>
+        <path d="M150,40 L150,70" stroke="var(--disturbance)" fill="none" marker-end="url(#arrow4d)"/>
+        <path d="M150,140 L150,120" stroke="var(--controller)" fill="none" marker-end="url(#arrow4c)"/>
+        <defs>
+          <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--io)"/></marker>
+          <marker id="arrow4d" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--disturbance)"/></marker>
+          <marker id="arrow4c" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--controller)"/></marker>
+        </defs>
+        <circle id="distPulse4" r="4" fill="var(--disturbance)" style="offset-path:path('M150,10 L150,70'); animation:pulseUpDown4 3s ease-in-out infinite;"/>
+      </svg>
+      <ul class="key-points">
+        <li><b>Inputs</b> — material, energy, or information entering the process.</li>
+        <li><b>Outputs</b> — product, waste, or information leaving it.</li>
+        <li><b>Disturbances</b> — unplanned changes acting on the process from outside.</li>
+        <li><b>Control actions</b> — deliberate adjustments keeping the process on target.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 5 ============ -->
+  <section class="sect" id="s5" data-acc="io" data-title="Inputs">
+    <div class="index">05</div>
+    <div class="eyebrow">What enters</div>
+    <h2>Inputs — material, energy, information</h2>
+    <p class="lede">Inputs are not only electrical signals. A setpoint entered by an operator is just as much an input as the raw water flowing into a tank.</p>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Category</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Material</td><td>Water, raw material, fuel, chemicals, parts</td></tr>
+          <tr><td>Energy</td><td>Electrical, mechanical, thermal, compressed air, hydraulic</td></tr>
+          <tr><td>Information</td><td>Production command, setpoint, recipe, operator command</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 6 ============ -->
+  <section class="sect" id="s6" data-acc="io" data-title="Outputs">
+    <div class="index">06</div>
+    <div class="eyebrow">What leaves</div>
+    <h2>Outputs — physical or informational</h2>
+    <p class="lede">Product, waste, heat, motion, pressure, flow, electrical energy, information.</p>
+    <div class="panel">
+      <div class="callout">A process that makes a perfect product but reports nothing about itself is invisible to everyone trying to manage it. Informational outputs matter as much as physical ones.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 7 ============ -->
+  <section class="sect" id="s7" data-acc="sensor" data-title="Physical Variables">
+    <div class="index">07</div>
+    <div class="eyebrow">What engineers watch</div>
+    <h2>Physical variables</h2>
+    <p class="lede">A tank isn't just "a tank" — it's a level, a temperature, a pressure, a flow rate, all existing simultaneously.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — several variables, monitored at once</div>
+      <div class="gauge-row" id="gaugeRow">
+        <div class="gauge-item">
+          <svg class="gauge-svg" viewBox="0 0 100 70"><path d="M15,60 A35,35 0 0,1 85,60" fill="none" stroke="var(--line-strong)" stroke-width="5"/><line id="needleTemp" class="gauge-needle" x1="50" y1="60" x2="50" y2="30" stroke="var(--actuator)" stroke-width="2.5"/></svg>
+          <div class="gauge-lbl">Temp</div>
+        </div>
+        <div class="gauge-item">
+          <svg class="gauge-svg" viewBox="0 0 100 70"><path d="M15,60 A35,35 0 0,1 85,60" fill="none" stroke="var(--line-strong)" stroke-width="5"/><line id="needlePress" class="gauge-needle" x1="50" y1="60" x2="50" y2="30" stroke="var(--sensor)" stroke-width="2.5"/></svg>
+          <div class="gauge-lbl">Pressure</div>
+        </div>
+        <div class="gauge-item">
+          <svg class="gauge-svg" viewBox="0 0 100 70"><path d="M15,60 A35,35 0 0,1 85,60" fill="none" stroke="var(--line-strong)" stroke-width="5"/><line id="needleFlow" class="gauge-needle" x1="50" y1="60" x2="50" y2="30" stroke="var(--controller)" stroke-width="2.5"/></svg>
+          <div class="gauge-lbl">Flow</div>
+        </div>
+      </div>
+      <table style="margin-top:20px;">
+        <thead><tr><th>Category</th><th>Core Variables</th></tr></thead>
+        <tbody>
+          <tr><td>Thermal</td><td>Temperature</td></tr>
+          <tr><td>Mechanical</td><td>Speed, position, force, torque, weight, vibration</td></tr>
+          <tr><td>Fluid</td><td>Pressure, flow, level</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 8 ============ -->
+  <section class="sect" id="s8" data-acc="sensor" data-title="Process State">
+    <div class="index">08</div>
+    <div class="eyebrow">A deeper idea</div>
+    <h2>The state of a process</h2>
+    <p class="lede">A process has a state — a complete snapshot of every relevant variable at one moment in time.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — live state, drifting and settling</div>
+      <div class="state-grid" id="stateGrid">
+        <div class="state-tile"><div class="lbl">Level</div><div class="val" id="stLevel">70%</div></div>
+        <div class="state-tile"><div class="lbl">Temp</div><div class="val" id="stTemp">65°C</div></div>
+        <div class="state-tile"><div class="lbl">Pressure</div><div class="val" id="stPress">2.0 bar</div></div>
+        <div class="state-tile"><div class="lbl">Flow</div><div class="val" id="stFlow">20 L/min</div></div>
+      </div>
+      <div class="callout" style="margin-top:18px;"><b>Automation doesn't control a "tank." It controls a state</b>, continuously, as that state tries to drift away from where it should be.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 9 ============ -->
+  <section class="sect" id="s9" data-acc="disturbance" data-title="CV / MV">
+    <div class="index">09</div>
+    <div class="eyebrow">Precise vocabulary</div>
+    <h2>Controlled vs. manipulated variable</h2>
+    <p class="lede">The controller never touches the controlled variable directly. It can only adjust the manipulated variable, and hope.</p>
+    <div class="panel">
+      <svg viewBox="0 0 280 140" style="width:100%; height:auto;">
+        <rect x="90" y="20" width="100" height="70" rx="8" fill="var(--bg)" stroke="var(--line-strong)" stroke-width="1.6"/>
+        <text x="140" y="55" text-anchor="middle" class="loop-node-label" style="font-size:11px;">TANK</text>
+        <text x="140" y="70" text-anchor="middle" class="loop-node-label">LEVEL = 70%</text>
+        <rect x="100" y="105" width="80" height="26" rx="5" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.6"/>
+        <text x="140" y="122" text-anchor="middle" class="loop-node-label">VALVE 45%</text>
+        <path d="M140,105 L140,90" stroke="var(--actuator)" fill="none"/>
+        <foreignObject x="195" y="30" width="80" height="30"><div class="cvmv-tag tag-cv" style="display:inline-block;">CV = LEVEL</div></foreignObject>
+        <foreignObject x="195" y="105" width="80" height="30"><div class="cvmv-tag tag-mv" style="display:inline-block;">MV = VALVE</div></foreignObject>
+      </svg>
+      <table style="margin-top:10px;">
+        <thead><tr><th>Term</th><th>Tank Example</th></tr></thead>
+        <tbody>
+          <tr><td>Controlled Variable</td><td>Tank level = 70%</td></tr>
+          <tr><td>Manipulated Variable</td><td>Valve opening = 45%</td></tr>
+          <tr><td>Disturbance</td><td>Sudden increase in outlet flow</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 10 ============ -->
+  <section class="sect" id="s10" data-acc="disturbance" data-title="Disturbances">
+    <div class="index">10</div>
+    <div class="eyebrow">The reason feedback exists</div>
+    <h2>Disturbances, in depth</h2>
+    <p class="lede">A good control system doesn't merely produce an output. It responds when the real world changes unexpectedly.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — demand rises, the loop responds</div>
+      <svg viewBox="0 0 280 150" style="width:100%; height:auto;">
+        <rect x="95" y="8" width="90" height="28" rx="6" fill="var(--bg)" stroke="var(--disturbance)" stroke-width="1.6"/>
+        <text x="140" y="26" text-anchor="middle" class="loop-node-label">DEMAND RISES</text>
+        <rect x="95" y="60" width="90" height="34" rx="6" fill="var(--bg)" stroke="var(--process)" stroke-width="1.6"/>
+        <text x="140" y="81" text-anchor="middle" class="loop-node-label" style="font-size:10px;">TANK</text>
+        <rect x="10" y="112" width="90" height="28" rx="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/>
+        <text x="55" y="130" text-anchor="middle" class="loop-node-label">CONTROLLER</text>
+        <rect x="180" y="112" width="90" height="28" rx="6" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.6"/>
+        <text x="225" y="130" text-anchor="middle" class="loop-node-label">VALVE</text>
+        <path id="distPath1" d="M140,36 L140,60" stroke="var(--disturbance)" fill="none"/>
+        <path id="distPath2" d="M110,94 L70,112" stroke="var(--line-strong)" fill="none"/>
+        <path id="distPath3" d="M100,126 L180,126" stroke="var(--line-strong)" fill="none"/>
+        <path id="distPath4" d="M225,112 L170,94" stroke="var(--line-strong)" fill="none"/>
+        <circle r="4" fill="var(--disturbance)" style="offset-path:path('M140,36 L140,60'); animation:pulseSeg 3.4s ease-in-out infinite;"/>
+        <circle r="4" fill="var(--sensor)" style="offset-path:path('M110,94 L70,112'); animation:pulseSeg 3.4s ease-in-out infinite .5s;"/>
+        <circle r="4" fill="var(--controller)" style="offset-path:path('M100,126 L180,126'); animation:pulseSeg 3.4s ease-in-out infinite 1s;"/>
+        <circle r="4" fill="var(--actuator)" style="offset-path:path('M225,112 L170,94'); animation:pulseSeg 3.4s ease-in-out infinite 1.5s;"/>
+      </svg>
+      <div class="callout">Nobody told the controller demand was going to increase. It only needed to notice the effect and correct for it.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 11 ============ -->
+  <section class="sect" id="s11" data-acc="sensor" data-title="Measurement">
+    <div class="index">11</div>
+    <div class="eyebrow">A window into the process</div>
+    <h2>Measurement</h2>
+    <p class="lede">The controller cannot directly "see" the physical world. It needs measurements.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — physical reality becoming a number</div>
+      <svg viewBox="0 0 300 60" style="width:100%; height:auto;">
+        <line x1="10" y1="30" x2="290" y2="30" stroke="var(--line-strong)" stroke-width="2"/>
+        <circle cx="30" cy="30" r="7" fill="var(--bg)" stroke="var(--process)" stroke-width="1.6"/>
+        <text x="30" y="50" text-anchor="middle" class="loop-node-label">VARIABLE</text>
+        <circle cx="110" cy="30" r="7" fill="var(--bg)" stroke="var(--sensor)" stroke-width="1.6"/>
+        <text x="110" y="50" text-anchor="middle" class="loop-node-label">SENSOR</text>
+        <circle cx="190" cy="30" r="7" fill="var(--bg)" stroke="var(--io)" stroke-width="1.6"/>
+        <text x="190" y="50" text-anchor="middle" class="loop-node-label">SIGNAL</text>
+        <circle cx="270" cy="30" r="7" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/>
+        <text x="270" y="50" text-anchor="middle" class="loop-node-label">CONTROLLER</text>
+        <circle r="4" fill="var(--sensor)" class="chain-pulse" style="offset-path:path('M10,30 L290,30');"/>
+      </svg>
+      <div class="callout">If that chain breaks anywhere, the controller isn't "confused" — it's making decisions based on a physical world that no longer matches reality.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 12 ============ -->
+  <section class="sect" id="s12" data-acc="actuator" data-title="Actuation">
+    <div class="index">12</div>
+    <div class="eyebrow">Changing reality</div>
+    <h2>Actuation</h2>
+    <p class="lede">Measurement is how the system perceives reality. Actuation is how it changes reality.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — the complete measure/act loop</div>
+      <svg viewBox="0 0 220 130" style="width:100%; height:auto;">
+        <rect x="10" y="20" width="90" height="34" rx="6" fill="var(--bg)" stroke="var(--process)" stroke-width="1.6"/>
+        <text x="55" y="41" text-anchor="middle" class="loop-node-label">PHYSICAL WORLD</text>
+        <rect x="130" y="20" width="80" height="34" rx="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/>
+        <text x="170" y="41" text-anchor="middle" class="loop-node-label">CONTROLLER</text>
+        <rect x="130" y="80" width="80" height="34" rx="6" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.6"/>
+        <text x="170" y="101" text-anchor="middle" class="loop-node-label">ACTUATOR</text>
+        <path d="M100,37 L130,37" stroke="var(--sensor)" fill="none" marker-end="url(#arrow12)"/>
+        <text x="115" y="30" text-anchor="middle" class="loop-node-label" style="fill:var(--sensor); font-size:7px;">measure</text>
+        <path d="M170,54 L170,80" stroke="var(--actuator)" fill="none" marker-end="url(#arrow12)"/>
+        <path d="M130,97 L55,97 L55,54" stroke="var(--actuator)" fill="none" marker-end="url(#arrow12)"/>
+        <text x="90" y="93" text-anchor="middle" class="loop-node-label" style="fill:var(--actuator); font-size:7px;">action</text>
+        <defs><marker id="arrow12" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-dim)"/></marker></defs>
+      </svg>
+      <ul class="key-points">
+        <li>Common actuators: motors, valves, heaters, cylinders, solenoids, drives.</li>
+        <li>Every chapter from here forward adds detail to one side of this loop or the other.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 13/14 combined contrast ============ -->
+  <section class="sect" id="s13" data-acc="disturbance" data-title="Open Loop">
+    <div class="index">13</div>
+    <div class="eyebrow">The simplest — and most fragile</div>
+    <h2>Open-loop control</h2>
+    <p class="lede">Command → Controller → Actuator → Process. Notice what's missing: no arrow leads back. <b>No feedback.</b></p>
+    <div class="panel">
+      <div class="panel-label">Mini trend — commanded vs. actual, no correction</div>
+      <svg class="mini-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+        <line x1="0" y1="20" x2="300" y2="20" stroke="var(--line-strong)" stroke-dasharray="3 4"/>
+        <path d="M0,20 L120,20 L130,60 L300,60" fill="none" stroke="var(--disturbance)" stroke-width="2.5"/>
+        <text x="4" y="14" class="loop-node-label">TARGET</text>
+        <text x="200" y="75" class="loop-node-label" style="fill:var(--disturbance);">STAYS WRONG</text>
+      </svg>
+      <div class="callout">A heater switched ON for 10 minutes, regardless of actual temperature — works, until conditions change from whatever they were when the timing was calculated.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="sect" id="s14" data-acc="controller" data-title="Closed Loop">
+    <div class="index">14</div>
+    <div class="eyebrow">One arrow changes everything</div>
+    <h2>Closed-loop control</h2>
+    <p class="lede">Setpoint → Controller → Actuator → Process → <b>Sensor → back to Controller.</b> That single arrow is the entire concept of feedback.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — the loop that corrects itself, forever</div>
+      <svg viewBox="0 0 220 220" style="width:220px; height:220px; margin:0 auto; display:block;">
+        <path class="loop-track" d="M110,40 A70,70 0 1,1 109,40" />
+        <circle id="closedDot" class="loop-dot" r="5" />
+        <g><circle class="loop-node on" cx="110" cy="40" r="26"/><text class="loop-node-label" x="110" y="37" text-anchor="middle">SET-</text><text class="loop-node-label" x="110" y="47" text-anchor="middle">POINT</text></g>
+        <g><circle class="loop-node" cx="180" cy="110" r="26"/><text class="loop-node-label" x="180" y="107" text-anchor="middle">ACTU-</text><text class="loop-node-label" x="180" y="117" text-anchor="middle">ATOR</text></g>
+        <g><circle class="loop-node" cx="110" cy="180" r="26"/><text class="loop-node-label" x="110" y="177" text-anchor="middle">PRO-</text><text class="loop-node-label" x="110" y="187" text-anchor="middle">CESS</text></g>
+        <g><circle class="loop-node" cx="40" cy="110" r="26"/><text class="loop-node-label" x="40" y="107" text-anchor="middle">SEN-</text><text class="loop-node-label" x="40" y="117" text-anchor="middle">SOR</text></g>
+      </svg>
+      <div class="callout">This loop never stops running. It is, without exaggeration, the single most important structural idea in all of industrial automation.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 15 ============ -->
+  <section class="sect" id="s15" data-acc="io" data-title="Process Types">
+    <div class="index">15</div>
+    <div class="eyebrow">Not everything runs the same way</div>
+    <h2>Types of industrial processes</h2>
+    <p class="lede">Four broad categories, each with a different control philosophy.</p>
+    <div class="panel">
+      <div class="type-tabs">
+        <button class="type-tab active" data-type="continuous">Continuous</button>
+        <button class="type-tab" data-type="batch">Batch</button>
+        <button class="type-tab" data-type="discrete">Discrete</button>
+      </div>
+
+      <div class="type-view active" id="view-continuous">
+        <svg viewBox="0 0 280 60" style="width:100%; height:auto;">
+          <line x1="10" y1="30" x2="270" y2="30" stroke="var(--line-strong)" stroke-width="3"/>
+          <circle r="5" fill="var(--io)" class="continuous-flow" style="offset-path:path('M10,30 L270,30'); filter:drop-shadow(0 0 5px var(--io));"/>
+          <circle r="5" fill="var(--io)" class="continuous-flow" style="offset-path:path('M10,30 L270,30'); animation-delay:-0.7s; filter:drop-shadow(0 0 5px var(--io));"/>
+          <circle r="5" fill="var(--io)" class="continuous-flow" style="offset-path:path('M10,30 L270,30'); animation-delay:-1.4s; filter:drop-shadow(0 0 5px var(--io));"/>
+        </svg>
+        <p style="font-size:13px; color:var(--ink-dim);">Material flows in, product flows out, without interruption. Refining, chemical plants, water treatment, power generation.</p>
+      </div>
+
+      <div class="type-view" id="view-batch">
+        <div style="display:flex; gap:8px;" id="batchStages">
+          <div class="batch-stage active" style="flex:1; text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px;">Load</div>
+          <div class="batch-stage" style="flex:1; text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px;">Process</div>
+          <div class="batch-stage" style="flex:1; text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px;">Hold</div>
+          <div class="batch-stage" style="flex:1; text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px;">Unload</div>
+        </div>
+        <p style="font-size:13px; color:var(--ink-dim); margin-top:12px;">A defined quantity processed start to finish before the next batch begins. Mixing a fixed recipe to a target volume.</p>
+      </div>
+
+      <div class="type-view" id="view-discrete">
+        <svg viewBox="0 0 280 60" style="width:100%; height:auto;">
+          <line x1="10" y1="30" x2="270" y2="30" stroke="var(--line-strong)" stroke-width="3"/>
+          <rect width="14" height="14" x="-7" y="-7" fill="var(--controller)" class="discrete-unit" style="offset-path:path('M10,30 L270,30');"/>
+        </svg>
+        <p style="font-size:13px; color:var(--ink-dim);">Individual, countable units through distinct stages: part → assembly → inspection → packaging.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 16 ============ -->
+  <section class="sect" id="s16" data-acc="info" data-title="Scaling">
+    <div class="index">16</div>
+    <div class="eyebrow">Zoom out</div>
+    <h2>Unit operation → machine → line → plant</h2>
+    <p class="lede">A fault at the unit-operation level can, left unaddressed, eventually show up as a missed shipment at the enterprise level.</p>
+    <div class="panel">
+      <div class="scale-stack">
+        <div class="scale-row">Physical phenomenon</div>
+        <div class="scale-row">Unit operation</div>
+        <div class="scale-row">Machine</div>
+        <div class="scale-row">Production cell</div>
+        <div class="scale-row">Production line</div>
+        <div class="scale-row">Plant</div>
+        <div class="scale-row">Enterprise</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 17 ============ -->
+  <section class="sect" id="s17" data-acc="disturbance" data-title="Subsystems">
+    <div class="index">17</div>
+    <div class="eyebrow">System thinking</div>
+    <h2>Systems are made of subsystems</h2>
+    <p class="lede">A pressure sensor drifting out of calibration doesn't just show a wrong number — it can move an actuator incorrectly, changing the physical process.</p>
+    <div class="panel">
+      <div class="panel-label">Animation — a fault propagating through subsystems</div>
+      <svg viewBox="0 0 280 140" style="width:100%; height:auto;">
+        <circle id="faultSensor" class="fault-node" cx="60" cy="40" r="24" fill="var(--bg)" stroke="var(--sensor)" stroke-width="1.8"/>
+        <text x="60" y="44" text-anchor="middle" class="loop-node-label" style="font-size:8px;">SENSOR</text>
+        <circle id="faultCtrl" class="fault-node" cx="140" cy="90" r="24" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.8"/>
+        <text x="140" y="94" text-anchor="middle" class="loop-node-label" style="font-size:8px;">PLC</text>
+        <circle id="faultAct" class="fault-node" cx="220" cy="40" r="24" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.8"/>
+        <text x="220" y="44" text-anchor="middle" class="loop-node-label" style="font-size:8px;">PUMP</text>
+        <line x1="80" y1="52" x2="120" y2="78" stroke="var(--line-strong)"/>
+        <line x1="160" y1="78" x2="200" y2="52" stroke="var(--line-strong)"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 18 ============ -->
+  <section class="sect" id="s18" data-acc="info" data-title="System Boundaries">
+    <div class="index">18</div>
+    <div class="eyebrow">A choice, not a fact</div>
+    <h2>System boundaries</h2>
+    <p class="lede">Where does a system begin and end? The same pump can be inside one boundary and outside another.</p>
+    <div class="panel boundary-toggle-wrap">
+      <button class="boundary-btn" id="boundaryToggle">Show: narrow boundary → click to widen</button>
+      <svg viewBox="0 0 280 120" style="width:100%; max-width:420px; margin:0 auto; display:block;">
+        <rect id="boundaryRect" class="boundary-rect" x="60" y="10" width="110" height="90" rx="10" fill="rgba(124,58,237,.08)" stroke="var(--info)" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="10" y="45" width="40" height="26" rx="5" fill="var(--bg)" stroke="var(--line-strong)"/>
+        <text x="30" y="62" text-anchor="middle" class="loop-node-label" style="font-size:7px;">TANK</text>
+        <rect x="70" y="45" width="40" height="26" rx="5" fill="var(--bg)" stroke="var(--line-strong)"/>
+        <text x="90" y="62" text-anchor="middle" class="loop-node-label" style="font-size:7px;">VALVE</text>
+        <rect id="boundaryPump" x="130" y="45" width="40" height="26" rx="5" fill="var(--bg)" stroke="var(--line-strong)"/>
+        <text x="150" y="62" text-anchor="middle" class="loop-node-label" style="font-size:7px;">PUMP</text>
+        <rect x="200" y="45" width="60" height="26" rx="5" fill="var(--bg)" stroke="var(--line-strong)"/>
+        <text x="230" y="62" text-anchor="middle" class="loop-node-label" style="font-size:7px;">PLANT WATER</text>
+      </svg>
+      <div class="callout" style="text-align:left;">Troubleshooting, documentation, and responsibility all depend on everyone agreeing where one system's boundary ends and the next begins.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 19 ============ -->
+  <section class="sect" id="s19" data-acc="controller" data-title="System Interaction">
+    <div class="index">19</div>
+    <div class="eyebrow">Interfaces</div>
+    <h2>Interaction between systems</h2>
+    <p class="lede">Each arrow is an interface — an agreed way for one system to hand information to the next.</p>
+    <div class="panel">
+      <svg viewBox="0 0 300 50" style="width:100%; height:auto;">
+        <line x1="10" y1="25" x2="290" y2="25" stroke="var(--line-strong)" stroke-width="2"/>
+        <circle cx="30" cy="25" r="6" fill="var(--bg)" stroke="var(--actuator)" stroke-width="1.6"/><text x="30" y="42" text-anchor="middle" class="loop-node-label">MACHINE</text>
+        <circle cx="100" cy="25" r="6" fill="var(--bg)" stroke="var(--controller)" stroke-width="1.6"/><text x="100" y="42" text-anchor="middle" class="loop-node-label">PLC</text>
+        <circle cx="180" cy="25" r="6" fill="var(--bg)" stroke="var(--line-strong)" stroke-width="1.6"/><text x="180" y="42" text-anchor="middle" class="loop-node-label">NETWORK</text>
+        <circle cx="260" cy="25" r="6" fill="var(--bg)" stroke="var(--sensor)" stroke-width="1.6"/><text x="260" y="42" text-anchor="middle" class="loop-node-label">SCADA</text>
+        <circle r="3.5" fill="var(--info)" class="iface-pulse" style="offset-path:path('M10,25 L290,25');"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 20 — CAPSTONE ============ -->
+  <section class="sect" id="s20" data-acc="sensor" data-title="Tank Case Study">
+    <div class="index">20</div>
+    <div class="eyebrow">Every idea, one system</div>
+    <h2>The water tank system</h2>
+    <p class="lede">Every concept in this chapter, tied together — and running live.</p>
+    <div class="panel">
+      <div class="panel-label">Interactive — the tank corrects itself, watch the trend</div>
+      <div class="tank-wrap">
+        <svg viewBox="0 0 160 180" style="width:100%; height:auto;">
+          <rect x="30" y="20" width="70" height="100" fill="none" stroke="var(--line-strong)" stroke-width="2"/>
+          <rect id="tankWaterC" x="32" y="70" width="66" height="48" fill="var(--sensor)" opacity=".35"/>
+          <line x1="10" y1="45" x2="30" y2="45" stroke="var(--line-strong)"/>
+          <text x="4" y="48" text-anchor="end" class="loop-node-label">IN</text>
+          <rect x="52" y="130" width="26" height="12" fill="none" stroke="var(--line-strong)"/>
+          <rect id="tankValveC" x="56" y="133" width="18" height="6" fill="var(--actuator)"/>
+          <text x="65" y="158" text-anchor="middle" class="loop-node-label">VALVE</text>
+          <circle cx="112" cy="70" r="5" fill="var(--bg)" stroke="var(--sensor)" stroke-width="1.5"/>
+          <text x="122" y="74" class="loop-node-label">SENSOR</text>
+          <rect x="105" y="90" width="34" height="18" rx="3" fill="none" stroke="var(--line-strong)"/>
+          <text x="122" y="102" text-anchor="middle" class="loop-node-label">PLC</text>
+          <line x1="112" y1="75" x2="112" y2="90" stroke="var(--line-strong)"/>
+          <line x1="112" y1="108" x2="90" y2="130" stroke="var(--line-strong)" stroke-dasharray="2 3"/>
+        </svg>
+        <div>
+          <svg class="trend-svg" viewBox="0 0 220 100" preserveAspectRatio="none">
+            <line x1="0" y1="50" x2="220" y2="50" stroke="var(--line-strong)" stroke-dasharray="3 4"/>
+            <polyline id="tankTrend" fill="none" stroke="var(--sensor)" stroke-width="2" points=""/>
+          </svg>
+          <div class="tank-readout"><span>Level</span><span id="tankLevelOutC">55%</span></div>
+          <div class="tank-readout"><span>Valve opening</span><span id="tankValveOutC">18%</span></div>
+        </div>
+      </div>
+      <table style="margin-top:20px;">
+        <thead><tr><th>Element</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>Tank</td><td>Process</td></tr>
+          <tr><td>Level</td><td>Controlled variable</td></tr>
+          <tr><td>Valve</td><td>Manipulated element</td></tr>
+          <tr><td>Sensor</td><td>Measurement</td></tr>
+          <tr><td>PLC</td><td>Controller</td></tr>
+          <tr><td>Outlet demand</td><td>Disturbance</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 21 ============ -->
+  <section class="sect" id="s21" data-acc="controller" data-title="Master Model">
+    <div class="index">21</div>
+    <div class="eyebrow">Everything, compressed</div>
+    <h2>The complete first-principles model</h2>
+    <div class="panel">
+      <svg viewBox="0 0 300 200" style="width:100%; height:auto;">
+        <g class="master-node" style="transition-delay:.05s;"><rect x="105" y="5" width="90" height="26" rx="5" fill="var(--bg)" stroke="var(--line-strong)"/><text x="150" y="22" text-anchor="middle" class="loop-node-label">REAL WORLD</text></g>
+        <g class="master-node" style="transition-delay:.15s;"><rect x="90" y="45" width="120" height="30" rx="5" fill="var(--bg)" stroke="var(--process)"/><text x="150" y="64" text-anchor="middle" class="loop-node-label">PHYSICAL PROCESS</text></g>
+        <g class="master-node" style="transition-delay:.25s;"><rect x="20" y="95" width="80" height="26" rx="5" fill="var(--bg)" stroke="var(--disturbance)"/><text x="60" y="112" text-anchor="middle" class="loop-node-label">DISTURBANCE</text></g>
+        <g class="master-node" style="transition-delay:.25s;"><rect x="200" y="95" width="80" height="26" rx="5" fill="var(--bg)" stroke="var(--io)"/><text x="240" y="112" text-anchor="middle" class="loop-node-label">OUTPUT</text></g>
+        <g class="master-node" style="transition-delay:.35s;"><rect x="10" y="140" width="80" height="26" rx="5" fill="var(--bg)" stroke="var(--sensor)"/><text x="50" y="157" text-anchor="middle" class="loop-node-label">SENSOR</text></g>
+        <g class="master-node" style="transition-delay:.45s;"><rect x="100" y="140" width="90" height="26" rx="5" fill="var(--bg)" stroke="var(--controller)"/><text x="145" y="157" text-anchor="middle" class="loop-node-label">CONTROLLER</text></g>
+        <g class="master-node" style="transition-delay:.55s;"><rect x="200" y="140" width="80" height="26" rx="5" fill="var(--bg)" stroke="var(--actuator)"/><text x="240" y="157" text-anchor="middle" class="loop-node-label">ACTUATOR</text></g>
+        <path d="M150,31 L150,45" stroke="var(--line-strong)" fill="none"/>
+        <path d="M100,75 L60,95" stroke="var(--disturbance)" fill="none"/>
+        <path d="M200,75 L240,95" stroke="var(--io)" fill="none"/>
+        <path d="M60,121 L50,140" stroke="var(--sensor)" fill="none"/>
+        <path d="M90,153 L100,153" stroke="var(--controller)" fill="none"/>
+        <path d="M190,153 L200,153" stroke="var(--actuator)" fill="none"/>
+        <path d="M240,140 L150,75" stroke="var(--actuator)" fill="none" stroke-dasharray="3 3"/>
+      </svg>
+      <div class="callout"><b>Industrial automation is built around the interaction between a physical process, measurements, decisions, and physical actions.</b></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ 22 ============ -->
+  <section class="sect" id="s22" data-acc="io" data-title="Summary">
+    <div class="index">22</div>
+    <div class="eyebrow">Chapter summary</div>
+    <h2>What have we actually learned?</h2>
+    <div class="panel">
+      <ul class="check-list">
+        <li style="--i:1"><span class="check-mark">✓</span><span>Process, machine, and system — three distinct words.</span></li>
+        <li style="--i:2"><span class="check-mark">✓</span><span>Inputs, outputs, disturbances, and control action — the universal structure.</span></li>
+        <li style="--i:3"><span class="check-mark">✓</span><span>Physical variables, and the state they collectively describe.</span></li>
+        <li style="--i:4"><span class="check-mark">✓</span><span>Controlled variable vs. manipulated variable — the central engineering gap.</span></li>
+        <li style="--i:5"><span class="check-mark">✓</span><span>Why measurement and actuation are two halves of one loop.</span></li>
+        <li style="--i:6"><span class="check-mark">✓</span><span>Open-loop vs. closed-loop — one arrow, and why it matters this much.</span></li>
+        <li style="--i:7"><span class="check-mark">✓</span><span>Continuous, batch, discrete — and why the category changes the control strategy.</span></li>
+        <li style="--i:8"><span class="check-mark">✓</span><span>Subsystems, system boundaries, and interfaces between systems.</span></li>
+      </ul>
+      <p style="margin-top:18px; font-family:var(--font-mono); font-size:13px; color:var(--ink-dim);">Sensors → Measurement → Control → Actuation → PLCs — exactly where Chapter 05 picks up.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>References: ISA · IEC 61512 / ISA-88 · Perry's Chemical Engineers' Handbook</div>
+    <div style="margin-top:14px;">Companion file for <a href="./04-industrial-processes-and-systems.md">04-industrial-processes-and-systems.md</a> — part of DeepURForge.</div>
+  </footer>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- progress bar + accent color ---------------- */
+  var progressBar = document.getElementById('progressBar');
+  var accColors = { process:'#eeece6', sensor:'#0891b2', controller:'#2563eb', actuator:'#d97706', disturbance:'#dc2626', io:'#16a34a', info:'#7c3aed' };
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.sect'));
+
+  function onScroll(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var pct = height > 0 ? (scrollTop / height) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  /* ---------------- side rail ---------------- */
+  var rail = document.getElementById('rail');
+  var railItems = [];
+  sections.forEach(function(sec, i){
+    var btn = document.createElement('div');
+    btn.className = 'rail-item';
+    btn.textContent = String(i+1).padStart(2,'0');
+    btn.title = sec.getAttribute('data-title') || '';
+    btn.style.setProperty('--dot', accColors[sec.getAttribute('data-acc')] || '#2563eb');
+    btn.addEventListener('click', function(){ sec.scrollIntoView({ behavior:'smooth', block:'start' }); });
+    var line = document.createElement('div');
+    line.className = 'rail-line';
+    btn.appendChild(line);
+    rail.appendChild(btn);
+    railItems.push(btn);
+  });
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var idx = sections.indexOf(entry.target);
+      if (entry.isIntersecting){
+        railItems.forEach(function(it){ it.classList.remove('active'); });
+        if (railItems[idx]) railItems[idx].classList.add('active');
+        var acc = entry.target.getAttribute('data-acc');
+        var color = accColors[acc] || '#2563eb';
+        document.documentElement.style.setProperty('--acc', color);
+        progressBar.style.background = color;
+      }
+    });
+  }, { threshold:0.5 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  /* ---------------- reveal panels on scroll ---------------- */
+  var panels = document.querySelectorAll('.panel');
+  var revealIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting){ entry.target.classList.add('in'); } });
+  }, { threshold:0.15 });
+  panels.forEach(function(p){ revealIO.observe(p); });
+
+  /* ---------------- loop dot travel (closed loop diagram) ---------------- */
+  var loopTracks = document.querySelectorAll('.loop-track');
+  loopTracks.forEach(function(path){
+    var svg = path.closest('svg');
+    var dot = svg.querySelector('.loop-dot');
+    if (!dot) return;
+    var len = path.getTotalLength();
+    var start = null;
+    var duration = 3600;
+    function tick(ts){
+      if (!start) start = ts;
+      var elapsed = (ts - start) % duration;
+      var pt = path.getPointAtLength((elapsed/duration) * len);
+      dot.setAttribute('cx', pt.x);
+      dot.setAttribute('cy', pt.y);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  /* ---------------- SIGNATURE: open vs closed loop trend ---------------- */
+  var sigTrace = document.getElementById('sigTrace');
+  var sigCaption = document.getElementById('sigCaption');
+  var btnOpen = document.getElementById('btnOpen');
+  var btnClosed = document.getElementById('btnClosed');
+  var sigMode = 'open';
+  var sigFrame = 0;
+  var W = 600, H = 170, MID = 85;
+
+  function computeSigPoints(mode, frame){
+    var pts = [];
+    var n = 120;
+    var distAt = 40; // disturbance event index
+    for (var i=0;i<=n;i++){
+      var x = (i/n)*W;
+      var t = i - ((frame*0.6) % n);
+      var val = MID;
+      var localI = i;
+      if (mode === 'open'){
+        val = localI < distAt ? MID : MID + 38; // jumps and stays
+      } else {
+        if (localI < distAt) val = MID;
+        else {
+          var decay = Math.exp(-(localI-distAt)/14);
+          val = MID + 38*decay*Math.cos((localI-distAt)*0.35);
+        }
+      }
+      pts.push(x.toFixed(1) + ',' + val.toFixed(1));
+    }
+    return pts.join(' ');
+  }
+
+  function renderSig(){
+    sigTrace.setAttribute('points', computeSigPoints(sigMode, sigFrame));
+  }
+
+  function setSigMode(mode){
+    sigMode = mode;
+    btnOpen.classList.toggle('active', mode === 'open');
+    btnClosed.classList.toggle('active', mode === 'closed');
+    sigTrace.setAttribute('stroke', mode === 'open' ? 'var(--disturbance)' : 'var(--controller)');
+    sigCaption.innerHTML = mode === 'open'
+      ? '<b>Open loop:</b> a disturbance hits at a random moment and the process just... stays wrong. Nothing is watching, so nothing corrects it.'
+      : '<b>Closed loop:</b> the same disturbance hits — but a sensor sees it, a controller reacts, and the process settles back to target on its own.';
+    renderSig();
+  }
+  btnOpen.addEventListener('click', function(){ setSigMode('open'); });
+  btnClosed.addEventListener('click', function(){ setSigMode('closed'); });
+  renderSig();
+  setInterval(function(){ sigFrame++; renderSig(); }, 90);
+
+  /* ---------------- s3 purpose chip cycling ---------------- */
+  var chips = document.querySelectorAll('#purposeWrap .purpose-chip');
+  if (chips.length){
+    var ci = 0;
+    setInterval(function(){
+      chips.forEach(function(c){ c.classList.remove('active'); });
+      chips[ci].classList.add('active');
+      ci = (ci+1) % chips.length;
+    }, 700);
+  }
+
+  /* ---------------- s7 gauge needles ---------------- */
+  var needleTemp = document.getElementById('needleTemp');
+  var needlePress = document.getElementById('needlePress');
+  var needleFlow = document.getElementById('needleFlow');
+  function setNeedle(el, deg){ if(el) el.setAttribute('transform', 'rotate(' + deg + ' 50 60)'); }
+  var gFrame = 0;
+  setInterval(function(){
+    gFrame += 1;
+    setNeedle(needleTemp, -50 + Math.sin(gFrame*0.15)*45);
+    setNeedle(needlePress, -50 + Math.sin(gFrame*0.11+1)*45);
+    setNeedle(needleFlow, -50 + Math.sin(gFrame*0.19+2)*45);
+  }, 120);
+
+  /* ---------------- s8 state readout drift/settle ---------------- */
+  var stLevel = document.getElementById('stLevel');
+  var stTemp = document.getElementById('stTemp');
+  var stPress = document.getElementById('stPress');
+  var stFlow = document.getElementById('stFlow');
+  var sFrame = 0;
+  if (stLevel){
+    setInterval(function(){
+      sFrame++;
+      var cyc = sFrame % 60;
+      var level = cyc < 20 ? 70 - cyc*0.8 : 70 - 16 + (cyc-20)*0.4;
+      var temp = 65 + Math.sin(sFrame*0.1)*1.5;
+      var press = 2.0 + Math.sin(sFrame*0.13)*0.15;
+      var flow = 20 + Math.sin(sFrame*0.17)*2;
+      stLevel.textContent = Math.round(level) + '%';
+      stTemp.textContent = temp.toFixed(1) + '°C';
+      stPress.textContent = press.toFixed(2) + ' bar';
+      stFlow.textContent = Math.round(flow) + ' L/min';
+    }, 200);
+  }
+
+  /* ---------------- s10 disturbance path fade (css handles pulses) ---------------- */
+
+  /* ---------------- s15 process type tabs ---------------- */
+  var typeTabs = document.querySelectorAll('.type-tab');
+  typeTabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      typeTabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      document.querySelectorAll('.type-view').forEach(function(v){ v.classList.remove('active'); });
+      document.getElementById('view-' + tab.getAttribute('data-type')).classList.add('active');
+    });
+  });
+  var batchStages = document.querySelectorAll('#batchStages .batch-stage');
+  if (batchStages.length){
+    var bi = 0;
+    setInterval(function(){
+      batchStages.forEach(function(s){ s.classList.remove('active'); });
+      batchStages[bi].classList.add('active');
+      bi = (bi+1) % batchStages.length;
+    }, 900);
+  }
+
+  /* ---------------- s17 fault propagation ---------------- */
+  var faultSensor = document.getElementById('faultSensor');
+  var faultCtrl = document.getElementById('faultCtrl');
+  var faultAct = document.getElementById('faultAct');
+  if (faultSensor){
+    function runFault(){
+      [faultSensor, faultCtrl, faultAct].forEach(function(n){ n.classList.remove('hit'); });
+      setTimeout(function(){ faultSensor.classList.add('hit'); }, 0);
+      setTimeout(function(){ faultCtrl.classList.add('hit'); }, 500);
+      setTimeout(function(){ faultAct.classList.add('hit'); }, 1000);
+      setTimeout(function(){ [faultSensor, faultCtrl, faultAct].forEach(function(n){ n.classList.remove('hit'); }); }, 2200);
+    }
+    runFault();
+    setInterval(runFault, 3400);
+  }
+
+  /* ---------------- s18 boundary toggle ---------------- */
+  var boundaryRect = document.getElementById('boundaryRect');
+  var boundaryToggle = document.getElementById('boundaryToggle');
+  var boundaryWide = false;
+  if (boundaryToggle){
+    boundaryToggle.addEventListener('click', function(){
+      boundaryWide = !boundaryWide;
+      if (boundaryWide){
+        boundaryRect.setAttribute('x', 60); boundaryRect.setAttribute('width', 210);
+        boundaryToggle.textContent = 'Show: wide boundary → click to narrow';
+      } else {
+        boundaryRect.setAttribute('x', 60); boundaryRect.setAttribute('width', 110);
+        boundaryToggle.textContent = 'Show: narrow boundary → click to widen';
+      }
+    });
+  }
+
+  /* ---------------- s20 tank capstone simulation ---------------- */
+  var tankWaterC = document.getElementById('tankWaterC');
+  var tankValveC = document.getElementById('tankValveC');
+  var tankLevelOutC = document.getElementById('tankLevelOutC');
+  var tankValveOutC = document.getElementById('tankValveOutC');
+  var tankTrend = document.getElementById('tankTrend');
+
+  if (tankWaterC){
+    var TANK_TOP=20, TANK_BOTTOM=120, TANK_H=100;
+    var setpoint=55, level=55, valveBase=18, phase=0, frame=0;
+    var history = [];
+    var HIST_MAX = 60;
+
+    function renderTankC(){
+      var pct = Math.max(4, Math.min(96, level));
+      var waterH = (pct/100)*TANK_H;
+      var y = TANK_BOTTOM - waterH;
+      tankWaterC.setAttribute('y', y);
+      tankWaterC.setAttribute('height', waterH);
+      tankLevelOutC.textContent = Math.round(pct) + '%';
+
+      var error = setpoint - level;
+      var valveOpen = Math.max(6, Math.min(100, valveBase + error*3.2));
+      var vw = 18*(valveOpen/100);
+      tankValveC.setAttribute('width', Math.max(1.5, vw));
+      tankValveC.setAttribute('x', 65 - vw/2);
+      tankValveOutC.textContent = Math.round(valveOpen) + '%';
+
+      history.push(pct);
+      if (history.length > HIST_MAX) history.shift();
+      var pts = history.map(function(v, i){
+        var x = (i/(HIST_MAX-1))*220;
+        var y2 = 100 - (v/100)*100;
+        return x.toFixed(1) + ',' + y2.toFixed(1);
+      }).join(' ');
+      tankTrend.setAttribute('points', pts);
+    }
+
+    function tankTickC(){
+      frame++;
+      if (frame % 35 === 0){
+        phase = (phase+1) % 5;
+        if (phase === 0){ level -= 16; }
+        else { level += (setpoint-level)*0.42 + 2.5; }
+      }
+      renderTankC();
+      requestAnimationFrame(tankTickC);
+    }
+    renderTankC();
+    requestAnimationFrame(tankTickC);
+  }
+
+})();
+</script>
+</body>
+</html>
