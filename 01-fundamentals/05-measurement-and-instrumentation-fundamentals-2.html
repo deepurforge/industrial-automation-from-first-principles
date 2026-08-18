@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 — Measurement &amp; Instrumentation Fundamentals · Live Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080b13;
+    --bg-alt:#0b1120;
+    --panel:#0e1526;
+    --panel-2:#0a0f1c;
+    --grid:#1b2740;
+    --grid-soft:#141d33;
+    --text:#e8edf7;
+    --text-dim:#8a96b3;
+    --text-faint:#586182;
+    --amber:#ff9142;
+    --amber-dim:#a85c2b;
+    --cyan:#46e0c5;
+    --cyan-dim:#2a8577;
+    --red:#ff5470;
+    --green:#6ee7a8;
+    --violet:#9d8cff;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--amber); color:#0a0e1a; }
+
+  h1,h2,h3{ font-family:'Rajdhani', sans-serif; font-weight:700; letter-spacing:0.01em; margin:0; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  /* ---------- background grid texture ---------- */
+  .grid-bg{
+    position:fixed; inset:0; z-index:-1;
+    background-image:
+      linear-gradient(var(--grid-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-soft) 1px, transparent 1px);
+    background-size:42px 42px;
+    background-position:center;
+    opacity:0.5;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+
+  /* ---------- top status bar ---------- */
+  .statusbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 28px;
+    background:rgba(8,11,19,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--grid);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .statusbar .dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--green); margin-right:7px;
+    box-shadow:0 0 8px var(--green);
+    animation: pulse 2s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  .statusbar-left{ display:flex; align-items:center; gap:22px; }
+  .statusbar-right{ display:flex; gap:22px; }
+  .statusbar span.k{ color:var(--text-faint); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1180px; margin:0 auto;
+    padding:90px 28px 40px;
+  }
+  .hero-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--amber);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:20px;
+  }
+  .hero-eyebrow::before{
+    content:''; width:26px; height:1px; background:var(--amber);
+  }
+  .hero h1{
+    font-size:clamp(2.4rem, 5.5vw, 4.4rem);
+    line-height:1.04;
+    color:var(--text);
+    max-width:14ch;
+  }
+  .hero h1 em{ color:var(--amber); font-style:normal; }
+  .hero-sub{
+    max-width:640px; margin-top:24px;
+    color:var(--text-dim); font-size:1.08rem;
+  }
+
+  /* ---------- hero scope strip ---------- */
+  .scope-wrap{
+    margin-top:44px;
+    border:1px solid var(--grid);
+    border-radius:var(--radius);
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    padding:0;
+    overflow:hidden;
+  }
+  .scope-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--grid);
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--text-faint);
+    letter-spacing:0.08em;
+  }
+  .scope-head b{ color:var(--cyan); font-weight:600; }
+  canvas#heroScope{ display:block; width:100%; height:150px; }
+
+  /* ---------- section shell ---------- */
+  .panel{
+    max-width:1180px; margin:64px auto; padding:0 28px;
+  }
+  .panel-card{
+    border:1px solid var(--grid);
+    border-radius:var(--radius);
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    overflow:hidden;
+  }
+  .panel-tag{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 22px;
+    border-bottom:1px solid var(--grid);
+    background:var(--panel-2);
+  }
+  .panel-tag-id{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; font-weight:600; letter-spacing:0.06em;
+    color:var(--bg); background:var(--amber);
+    padding:3px 9px; border-radius:4px;
+  }
+  .panel-tag-name{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--text-faint); letter-spacing:0.05em;
+  }
+  .panel-body{ padding:30px 28px 34px; }
+  .panel-body h2{ font-size:1.9rem; color:var(--text); margin-bottom:12px; }
+  .panel-body .lede{ color:var(--text-dim); max-width:70ch; margin-bottom:26px; font-size:1rem; }
+  .panel-grid{
+    display:grid; grid-template-columns: 1.15fr 1fr; gap:30px; align-items:start;
+  }
+  @media (max-width: 860px){ .panel-grid{ grid-template-columns:1fr; } }
+
+  .readout-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:18px; }
+  .readout{
+    flex:1; min-width:120px;
+    border:1px solid var(--grid); border-radius:8px;
+    padding:10px 14px; background:var(--panel-2);
+  }
+  .readout .label{ font-size:10.5px; letter-spacing:0.08em; color:var(--text-faint); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; }
+  .readout .value{ font-family:'IBM Plex Mono', monospace; font-size:1.5rem; font-weight:600; color:var(--cyan); margin-top:2px; }
+  .readout .value.warn{ color:var(--red); }
+  .readout .value.ok{ color:var(--green); }
+
+  .ctrl{ margin-top:18px; }
+  .ctrl label{ display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:6px; font-family:'IBM Plex Mono', monospace; }
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
+    background:var(--grid); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--amber); cursor:pointer; border:2px solid var(--bg);
+    box-shadow:0 0 0 2px var(--amber);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%;
+    background:var(--amber); cursor:pointer; border:2px solid var(--bg);
+  }
+
+  .btn{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.04em;
+    background:transparent; color:var(--amber); border:1px solid var(--amber-dim);
+    padding:9px 16px; border-radius:6px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .btn:hover{ background:var(--amber); color:var(--bg); }
+  .btn.alt{ color:var(--cyan); border-color:var(--cyan-dim); }
+  .btn.alt:hover{ background:var(--cyan); color:var(--bg); }
+  .btn.danger{ color:var(--red); border-color:#7a2436; }
+  .btn.danger:hover{ background:var(--red); color:var(--bg); }
+  .btn-row{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+
+  .canvas-frame{
+    border:1px solid var(--grid); border-radius:8px; background:var(--panel-2);
+    padding:14px; position:relative;
+  }
+  .canvas-frame canvas{ display:block; width:100%; }
+  .canvas-caption{ margin-top:10px; font-size:12px; color:var(--text-faint); font-family:'IBM Plex Mono', monospace; }
+
+  .explainer p{ color:var(--text-dim); font-size:0.97rem; margin:0 0 12px; }
+  .explainer strong{ color:var(--text); }
+  .formula{
+    font-family:'IBM Plex Mono', monospace; font-size:0.95rem; color:var(--cyan);
+    background:var(--panel-2); border:1px solid var(--grid); border-left:3px solid var(--cyan-dim);
+    padding:10px 14px; border-radius:6px; margin:14px 0;
+  }
+
+  .deepdive{
+    margin-top:34px; padding-top:28px; border-top:1px dashed var(--grid);
+    display:grid; grid-template-columns: 1fr 1fr; gap:34px;
+  }
+  @media (max-width: 860px){ .deepdive{ grid-template-columns:1fr; } }
+  .deepdive h3{
+    font-size:1.02rem; color:var(--amber); margin-bottom:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .deepdive h3::before{ content:'▸'; color:var(--amber-dim); }
+  .deepdive p{ color:var(--text-dim); font-size:0.94rem; margin:0 0 12px; }
+  .deepdive p strong{ color:var(--text); font-weight:600; }
+  .deepdive p code{
+    font-family:'IBM Plex Mono', monospace; font-size:0.85em; color:var(--cyan);
+    background:var(--panel-2); padding:1px 5px; border-radius:3px;
+  }
+  .field-list{ list-style:none; margin:0; padding:0; }
+  .field-list li{
+    color:var(--text-dim); font-size:0.93rem; padding:7px 0 7px 20px;
+    border-bottom:1px solid var(--grid-soft);
+    position:relative;
+  }
+  .field-list li:last-child{ border-bottom:none; }
+  .field-list li::before{
+    content:'—'; position:absolute; left:0; color:var(--text-faint);
+  }
+  .field-list li strong{ color:var(--text); font-weight:600; }
+  .fault-list li::before{ content:'⚠'; color:var(--red); }
+  .note-tag{
+    display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:10px;
+    letter-spacing:0.06em; text-transform:uppercase; color:var(--bg);
+    background:var(--cyan); padding:2px 7px; border-radius:3px; margin-bottom:10px;
+  }
+  .note-tag.warn{ background:var(--red); }
+  .note-tag.info{ background:var(--violet); }
+
+  .toggle-switch{
+    display:inline-flex; border:1px solid var(--grid); border-radius:20px; overflow:hidden;
+  }
+  .toggle-switch button{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; padding:7px 16px;
+    background:var(--panel-2); color:var(--text-faint); border:none; cursor:pointer;
+  }
+  .toggle-switch button.active{ background:var(--amber); color:var(--bg); }
+
+  /* pyramid section */
+  .pyramid{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:20px 0 6px; }
+  .pyr-layer{
+    width: var(--w);
+    padding:14px 10px; text-align:center;
+    border-radius:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    color:var(--bg); font-weight:600;
+    opacity:0; transform:translateY(14px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .pyr-layer.show{ opacity:1; transform:translateY(0); }
+
+  footer{
+    max-width:1180px; margin:80px auto 60px; padding:0 28px;
+    border-top:1px solid var(--grid); padding-top:28px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    color:var(--text-faint); font-family:'IBM Plex Mono', monospace; font-size:12px;
+  }
+
+  .fault-flash{ animation: flash 0.5s infinite; }
+  @keyframes flash{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,84,112,0); } 50%{ box-shadow:0 0 0 6px rgba(255,84,112,0.15); } }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="statusbar">
+  <div class="statusbar-left">
+    <span><span class="dot"></span>LIVE PANEL</span>
+    <span class="k">CH/</span>05 — INSTRUMENTATION
+  </div>
+  <div class="statusbar-right">
+    <span class="k">SCAN&nbsp;</span><span id="scanClock">000.0s</span>
+    <span class="k">LOOP&nbsp;</span>OK
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="hero-eyebrow">Measurement &amp; Instrumentation Fundamentals</div>
+  <h1>Measure the physical world.<br>Understand the <em>signal</em>.<br>Trust the information.</h1>
+  <p class="hero-sub">
+    Nine live instrument panels below — each one animates the exact physics that turns a physical
+    quantity into a number your PLC can act on. Drag the sliders. Trip the faults. Watch the lag.
+    This is instrumentation the way it actually behaves in the field, not just on paper.
+  </p>
+
+  <div class="scope-wrap">
+    <div class="scope-head">
+      <span>TR-000 &nbsp;·&nbsp; AMBIENT LOOP TRACE</span>
+      <span><b>ONLINE</b> &nbsp;·&nbsp; 4–20&nbsp;mA</span>
+    </div>
+    <canvas id="heroScope" height="150"></canvas>
+  </div>
+</section>
+
+<!-- ================= TT-101 : RTD TEMPERATURE ================= -->
+<section class="panel" id="tt101">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">TT-101</span>
+      <span class="panel-tag-name">TEMPERATURE TRANSMITTER · RTD (Pt100)</span>
+    </div>
+    <div class="panel-body">
+      <h2>From heat to resistance to a number</h2>
+      <p class="lede">A platinum RTD doesn't measure temperature directly — it measures its own electrical
+      resistance, which happens to rise in a very predictable way as it gets hotter. Everything downstream
+      depends on that relationship holding true.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="rtdCanvas" height="280"></canvas>
+          <div class="canvas-caption">Live plot — R(T) = R₀·(1 + α·T), α ≈ 0.00385 Ω/Ω/°C</div>
+        </div>
+        <div>
+          <div class="explainer">
+            <p>Drag the probe temperature. The point on the curve moves with it, and the probe glows
+            from cold blue through to hot red — the same resistance element, at a different point on
+            an almost-straight line.</p>
+          </div>
+          <div class="ctrl">
+            <label>PROBE TEMPERATURE — <span id="rtdTempLabel">25</span> °C</label>
+            <input type="range" id="rtdSlider" min="-50" max="300" value="25" step="1">
+          </div>
+          <div class="readout-row">
+            <div class="readout">
+              <div class="label">Resistance</div>
+              <div class="value" id="rtdOhms">109.2 Ω</div>
+            </div>
+            <div class="readout">
+              <div class="label">Sensitivity</div>
+              <div class="value" id="rtdSens">0.385 Ω/°C</div>
+            </div>
+          </div>
+          <div class="formula">ΔR ≈ 0.385 Ω per 1 °C rise (Pt100, near 0 °C)</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">Physics</span>
+          <h3>Why platinum, and why "almost" linear</h3>
+          <p>Platinum is used because its resistance-vs-temperature relationship is extremely stable and
+          repeatable from one probe to the next — two Pt100s from different manufacturers will track each
+          other within fractions of a degree. The relationship shown on the plot is the simplified linear
+          approximation. Over the full industrial range, the more rigorous <strong>Callendar–Van Dusen
+          equation</strong> adds a quadratic correction term above 0 °C, and a cubic term below it — which
+          is why a quality temperature transmitter stores a polynomial, not a single slope, and why cheap
+          modules that assume pure linearity drift off calibration at the extremes of their range.</p>
+          <p>The RTD is <strong>passive</strong>: it produces no signal on its own. A small excitation
+          current has to be pushed through it, and the resulting voltage drop is measured. That excitation
+          current itself dissipates a tiny amount of power in the element — <strong>self-heating error</strong> —
+          which is why excitation is deliberately kept low, typically around 1 mA or less.</p>
+        </div>
+        <div>
+          <span class="note-tag info">Field practice</span>
+          <h3>2-wire vs. 3-wire vs. 4-wire</h3>
+          <p>The lead wires themselves have resistance, and that resistance adds directly to the reading
+          in a naive 2-wire hookup — over a long cable run this can look like several degrees of error.
+          A <strong>3-wire</strong> configuration lets the transmitter subtract one lead's resistance from
+          the measurement; a <strong>4-wire</strong> configuration (Kelvin sensing) separates the excitation
+          and sensing paths entirely and cancels lead resistance completely — the standard for
+          laboratory-grade accuracy.</p>
+          <ul class="field-list fault-list">
+            <li><strong>Open circuit</strong> — reading jumps to full-scale high (fail-safe upscale)</li>
+            <li><strong>Short circuit</strong> — reading drops toward the low end of range</li>
+            <li><strong>Lead resistance drift</strong> — slow, silent offset error that calibration checks miss unless the whole loop is tested</li>
+            <li><strong>Self-heating</strong> — reads slightly high in still air/gas, less so in flowing liquid</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PT-102 : 4-20mA LOOP ================= -->
+<section class="panel" id="pt102">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">PT-102</span>
+      <span class="panel-tag-name">LOOP CALIBRATOR · 4–20 mA CURRENT LOOP</span>
+    </div>
+    <div class="panel-body">
+      <h2>Why the loop starts at 4 mA, not 0</h2>
+      <p class="lede">This is what a HART loop calibrator does in the field: it forces or reads the
+      current on a two-wire loop. Move the process value and watch the current respond — then trip a
+      broken wire and see why "live zero" exists at all.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="loopGauge" height="280"></canvas>
+          <div class="canvas-caption" id="loopCaption">Gauge sweeps 4 mA (0%) → 20 mA (100%)</div>
+        </div>
+        <div>
+          <div class="ctrl">
+            <label>PROCESS VALUE — <span id="loopPctLabel">50</span> %</label>
+            <input type="range" id="loopSlider" min="0" max="100" value="50" step="1">
+          </div>
+          <div class="readout-row">
+            <div class="readout">
+              <div class="label">Loop Current</div>
+              <div class="value" id="loopMA">12.00 mA</div>
+            </div>
+            <div class="readout">
+              <div class="label">Loop Status</div>
+              <div class="value ok" id="loopStatus">NORMAL</div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn danger" id="breakWireBtn">Simulate broken wire</button>
+            <button class="btn alt" id="restoreWireBtn">Restore loop</button>
+          </div>
+          <div class="formula">mA = 4 + (0.16 × %) &nbsp;&nbsp;|&nbsp;&nbsp; below 4 mA = fault, not "0%"</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">Design rationale</span>
+          <h3>The "live zero" is deliberate, not arbitrary</h3>
+          <p>A signal that ran 0–20 mA would make 0 mA ambiguous — is the process genuinely at zero, or is
+          the wire cut, the power dead, or the transmitter failed? Starting at <strong>4 mA</strong> reserves
+          the bottom of the range as a health check: any current below roughly 3.6 mA (per the NAMUR NE43
+          convention) is unambiguously a fault, never a valid process reading.</p>
+          <p>The same two wires that carry this signal can also carry <strong>power</strong> to the
+          transmitter — this is what makes a "2-wire loop-powered transmitter" possible. The control-room
+          power supply pushes current around the loop; the field transmitter varies its own internal
+          resistance to set how much current gets through, from 4 mA at 0% up to 20 mA at 100%. No separate
+          power wiring is needed in the field.</p>
+        </div>
+        <div>
+          <span class="note-tag info">Beyond analog</span>
+          <h3>HART — a digital signal riding on top</h3>
+          <p>Most modern 4–20 mA transmitters also support <strong>HART</strong> (Highway Addressable Remote
+          Transducer): a small, high-frequency digital signal superimposed on the analog current, invisible
+          to the PLC's analog input but readable by a handheld communicator or a HART-capable I/O card. This
+          lets a technician read diagnostics, re-range the instrument, or check its configuration without
+          disturbing the 4–20 mA process signal it's also sending.</p>
+          <ul class="field-list fault-list">
+            <li><strong>&lt; 3.6 mA</strong> — broken wire, dead power supply, or failed transmitter</li>
+            <li><strong>&gt; 21 mA</strong> — over-range or a transmitter fault reporting saturation</li>
+            <li><strong>Stuck at exactly one value</strong> — often a frozen transmitter, not a frozen process</li>
+            <li><strong>Noisy / jumpy current</strong> — check grounding and shielding before suspecting the sensor itself</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LT-103 : DYNAMIC RESPONSE ================= -->
+<section class="panel" id="lt103">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">LT-103</span>
+      <span class="panel-tag-name">LEVEL TRANSMITTER · STEP RESPONSE &amp; LAG</span>
+    </div>
+    <div class="panel-body">
+      <h2>The measurement always lags the process</h2>
+      <p class="lede">Trip a sudden step in the real tank level and watch the <em style="color:var(--amber)">true value</em>
+      jump instantly while the <em style="color:var(--cyan)">measured value</em> chases it — a first-order lag,
+      exactly like a real sensor's thermal or hydraulic time constant.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="lagCanvas" height="280"></canvas>
+          <div class="canvas-caption"><span style="color:var(--amber)">■</span> true value &nbsp; <span style="color:var(--cyan)">■</span> measured value</div>
+        </div>
+        <div>
+          <div class="ctrl">
+            <label>SENSOR TIME CONSTANT (τ) — <span id="tauLabel">2.0</span> s</label>
+            <input type="range" id="tauSlider" min="0.3" max="6" value="2" step="0.1">
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="stepBtn">Trigger step change</button>
+          </div>
+          <div class="readout-row">
+            <div class="readout">
+              <div class="label">True Value</div>
+              <div class="value" id="trueVal">40%</div>
+            </div>
+            <div class="readout">
+              <div class="label">Measured</div>
+              <div class="value" id="measVal">40.0%</div>
+            </div>
+          </div>
+          <div class="formula">measured(t) = true − (true − start)·e^(−t/τ)</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">Reading the curve</span>
+          <h3>What τ actually means</h3>
+          <p>The time constant <strong>τ</strong> is the time it takes the measured value to close
+          <strong>63.2%</strong> of the remaining gap to the true value. After one τ, 63% of the step is
+          captured; after <strong>five time constants</strong>, the measurement is within about 0.7% of the
+          final value — which is why "5τ" is the common rule of thumb for when a sensor has effectively
+          "settled." Try dragging the τ slider to its slowest setting and triggering a step: the measured
+          trace visibly can't keep up.</p>
+          <p>This isn't a flaw unique to bad instruments — <strong>every</strong> real sensor has some τ,
+          because it takes a nonzero amount of time for heat to conduct through a thermowell, for pressure
+          to propagate through an impulse line, or for a float to physically move. The engineering question
+          is never "does my sensor lag," it's "is the lag small enough relative to how fast my process
+          actually changes."</p>
+        </div>
+        <div>
+          <span class="note-tag warn">Why this matters for control</span>
+          <h3>Lag feeds straight into loop tuning</h3>
+          <p>A PID controller tuned against a fast, low-lag measurement will often <strong>overshoot and
+          oscillate</strong> if that same measurement is suddenly slower — the controller keeps "pushing"
+          because it hasn't yet seen the process catch up, then overcorrects once the delayed reading finally
+          arrives. This is one of the most common root causes of an oscillating loop that used to be stable:
+          a fouled thermowell, a plugged impulse line, or a failing sensor element quietly increasing τ long
+          before it fails outright.</p>
+          <ul class="field-list">
+            <li><strong>Fast τ (&lt;1s)</strong> — bare thermocouple junction, small-diameter probes</li>
+            <li><strong>Moderate τ (1–5s)</strong> — typical thermowell-mounted RTD in flowing liquid</li>
+            <li><strong>Slow τ (&gt;10s)</strong> — heavily lagged thermowells, still air, large thermal mass</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AI-104 : ADC SAMPLING & ALIASING ================= -->
+<section class="panel" id="ai104">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">AI-104</span>
+      <span class="panel-tag-name">ANALOG INPUT · SAMPLING &amp; ALIASING</span>
+    </div>
+    <div class="panel-body">
+      <h2>Sample too slowly and the signal lies</h2>
+      <p class="lede">The true signal is a steady 5 Hz vibration. Drag the sample rate below the Nyquist
+      limit (10 Hz) and watch the reconstructed signal turn into a false, slower wave — a textbook
+      aliasing failure, live.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="aliasCanvas" height="280"></canvas>
+          <div class="canvas-caption"><span style="color:var(--text-faint)">■</span> true 5 Hz signal &nbsp; <span style="color:var(--red)">●</span> samples &nbsp; <span style="color:var(--amber)">■</span> reconstructed</div>
+        </div>
+        <div>
+          <div class="ctrl">
+            <label>SAMPLE RATE — <span id="fsLabel">40</span> Hz</label>
+            <input type="range" id="fsSlider" min="4" max="60" value="40" step="1">
+          </div>
+          <div class="readout-row">
+            <div class="readout">
+              <div class="label">Nyquist Limit</div>
+              <div class="value">10 Hz</div>
+            </div>
+            <div class="readout">
+              <div class="label">Status</div>
+              <div class="value ok" id="nyquistStatus">SAFE</div>
+            </div>
+          </div>
+          <div class="formula">f_sample ≥ 2 × f_signal &nbsp;&nbsp;(Nyquist–Shannon)</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">The theorem</span>
+          <h3>Why 2× and not just "faster is better"</h3>
+          <p>The Nyquist–Shannon theorem states that a continuous signal can be perfectly reconstructed
+          from its samples only if the sample rate is at least <strong>twice</strong> the highest frequency
+          component present. Drag the slider just under 10 Hz and the reconstructed trace doesn't just get
+          "chunky" — it locks onto a completely different, lower apparent frequency. That's not a rendering
+          artifact; it's exactly what happens inside a real ADC. Once aliasing occurs, the original
+          high-frequency information is <strong>permanently lost</strong> — no amount of downstream
+          processing can recover it, because the samples themselves are indistinguishable from a genuinely
+          slower signal.</p>
+        </div>
+        <div>
+          <span class="note-tag info">Real fix: filter before you sample</span>
+          <h3>The anti-aliasing filter</h3>
+          <p>Because aliasing can't be corrected after the fact, industrial data acquisition hardware places
+          a low-pass <strong>anti-aliasing filter</strong> in the analog path, before the ADC, to remove any
+          frequency content above the Nyquist limit before it can be misrepresented. This is standard
+          practice in vibration monitoring, where mechanical signals routinely carry energy at gear-mesh and
+          bearing-defect frequencies well above what a casual sample rate would safely capture.</p>
+          <p>Separately, every ADC also introduces <strong>quantization error</strong> — each sample gets
+          rounded to the nearest representable digital step, an unavoidable ±½ LSB (least significant bit)
+          uncertainty baked into digitization itself, independent of sampling rate.</p>
+          <ul class="field-list fault-list">
+            <li><strong>Vibration monitoring</strong> — a 150 Hz bearing fault sampled at 200 Hz can alias into a false low-frequency signature</li>
+            <li><strong>Slow PLC scan rates</strong> — a fast-moving analog input polled too infrequently can misrepresent genuine process transients</li>
+            <li><strong>No anti-aliasing filter fitted</strong> — the single most common root cause of "phantom" high-frequency noise appearing as slow drift</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VT-105 : NOISE & FILTERING ================= -->
+<section class="panel" id="vt105">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">VT-105</span>
+      <span class="panel-tag-name">VIBRATION TRANSMITTER · NOISE &amp; FILTERING</span>
+    </div>
+    <div class="panel-body">
+      <h2>Signal conditioning, live</h2>
+      <p class="lede">This is a scrolling oscilloscope trace of a real noisy field signal. Flip the switch
+      to apply a moving-average filter and watch the same underlying process value become usable.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="noiseCanvas" height="220"></canvas>
+          <div class="canvas-caption">Scrolling trace — 400 ms window</div>
+        </div>
+        <div>
+          <div class="toggle-switch" id="noiseToggle">
+            <button class="active" data-mode="raw">RAW SIGNAL</button>
+            <button data-mode="filtered">FILTERED</button>
+          </div>
+          <div class="readout-row">
+            <div class="readout">
+              <div class="label">Noise σ</div>
+              <div class="value" id="noiseSigma">±1.8</div>
+            </div>
+            <div class="readout">
+              <div class="label">Filter</div>
+              <div class="value" id="filterState">OFF</div>
+            </div>
+          </div>
+          <div class="formula">y[n] = (1/N)·Σ x[n−k] &nbsp;&nbsp;(N-point moving average)</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">Where the noise comes from</span>
+          <h3>Electrical noise isn't random luck</h3>
+          <p>Most field noise has an identifiable physical cause: <strong>electromagnetic interference
+          (EMI)</strong> coupling in from nearby variable-frequency drives or power cabling, poor or missing
+          cable <strong>shielding</strong>, unshielded twisted pairs instead of shielded twisted pairs, or a
+          <strong>ground loop</strong> — two ground references sitting at slightly different potentials,
+          driving an unwanted current directly through the signal path. Fixing the physical cause (proper
+          shielding, single-point grounding, physical separation from power cabling) is almost always a
+          better first move than filtering the symptom.</p>
+        </div>
+        <div>
+          <span class="note-tag warn">Filtering is a trade, not a free win</span>
+          <h3>Smoother isn't automatically better</h3>
+          <p>Toggle the filter on and watch the trace smooth out — but also notice it reacts a beat slower
+          to sudden changes. A moving-average filter is itself a small first-order lag (see LT-103): every
+          sample of averaging you add to clean up noise also adds delay to how quickly the reported value
+          can respond to a genuine, fast process change. Over-filtering a fast-moving signal can hide a real
+          transient as effectively as noise can hide a real signal — the right amount of filtering depends
+          entirely on how fast the underlying process legitimately moves.</p>
+          <ul class="field-list">
+            <li><strong>Too little filtering</strong> — noisy trend graphs, chattering alarms, jittery control output</li>
+            <li><strong>Too much filtering</strong> — real events smeared out, delayed alarm response, sluggish control</li>
+            <li><strong>Better fix when available</strong> — shielded/twisted-pair cabling and correct grounding, before reaching for a software filter</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FY-106 : HYSTERESIS ================= -->
+<section class="panel" id="fy106">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">FY-106</span>
+      <span class="panel-tag-name">CHARACTERISTIC CURVE · HYSTERESIS</span>
+    </div>
+    <div class="panel-body">
+      <h2>The same input, two different outputs</h2>
+      <p class="lede">Drag the input slider up, then back down. The output traces a different path
+      each direction — a hysteresis loop. The gap between the two paths is error you cannot calibrate
+      away with a single lookup table.</p>
+
+      <div class="panel-grid">
+        <div class="canvas-frame">
+          <canvas id="hystCanvas" height="280"></canvas>
+          <div class="canvas-caption"><span style="color:var(--amber)">■</span> rising &nbsp; <span style="color:var(--cyan)">■</span> falling</div>
+        </div>
+        <div>
+          <div class="ctrl">
+            <label>INPUT — <span id="hystInputLabel">0</span> %</label>
+            <input type="range" id="hystSlider" min="0" max="100" value="0" step="1">
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="hystClearBtn">Clear trace</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">What causes it</span>
+          <h3>Mechanical and magnetic memory</h3>
+          <p>Hysteresis comes from physical effects that "remember" which direction the input was moving:
+          friction and backlash in mechanical linkages, elastic lag in a diaphragm or bourdon tube that
+          doesn't spring back at exactly the same rate it deformed, and magnetic domain lag in
+          electromagnetic sensors. The gap you're tracing on the plot is real lost information — the
+          instrument genuinely cannot tell, from the output alone, whether it arrived at that value from
+          above or below.</p>
+        </div>
+        <div>
+          <span class="note-tag info">Not the same as dead band</span>
+          <h3>Two different characteristic errors</h3>
+          <p>Hysteresis and <strong>dead band</strong> are often confused. Dead band is a range of input
+          change that produces <em>no</em> output change at all — the needle simply doesn't move until the
+          input crosses a threshold. Hysteresis, shown here, is different: the output <em>does</em> move,
+          but along a different path depending on direction. Neither can be removed with a simple one-point
+          calibration adjustment — a single calibration certificate captures accuracy at that moment, not
+          the instrument's full rising/falling behavior across its range, which is why hysteresis is usually
+          reported as its own spec on a datasheet.</p>
+          <ul class="field-list">
+            <li><strong>Typical magnitude</strong> — often specified as a % of span (e.g. ±0.1%)</li>
+            <li><strong>Worse with wear</strong> — mechanical linkages loosen over time, widening the loop</li>
+            <li><strong>Practical impact</strong> — a control valve approaching setpoint from opposite directions can settle at two slightly different actual positions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CAL-107 : TRACEABILITY ================= -->
+<section class="panel" id="cal107">
+  <div class="panel-card">
+    <div class="panel-tag">
+      <span class="panel-tag-id">CAL-107</span>
+      <span class="panel-tag-name">CALIBRATION &amp; TRACEABILITY CHAIN</span>
+    </div>
+    <div class="panel-body">
+      <h2>An unbroken chain back to SI</h2>
+      <p class="lede">Scroll into view — each link in the traceability chain lights up in sequence.
+      Break any one link, and every instrument below it inherits an unknown, undocumented error.</p>
+
+      <div class="pyramid" id="pyramidWrap">
+        <div class="pyr-layer" style="--w:34%; background:#ff9142;">SI UNITS</div>
+        <div class="pyr-layer" style="--w:46%; background:#f7a463;">NATIONAL / INTERNATIONAL STANDARD</div>
+        <div class="pyr-layer" style="--w:58%; background:#46e0c5;">REFERENCE STANDARD</div>
+        <div class="pyr-layer" style="--w:70%; background:#6ee7a8;">WORKING STANDARD</div>
+        <div class="pyr-layer" style="--w:84%; background:#9d8cff;">FIELD INSTRUMENT (YOUR TRANSMITTER)</div>
+      </div>
+      <div class="formula" style="text-align:center;">Every link adds its own uncertainty — traceability ≠ perfection, it means the error is known and documented.</div>
+
+      <div class="deepdive">
+        <div>
+          <span class="note-tag">Calibration vs. adjustment vs. verification</span>
+          <h3>Three activities people conflate constantly</h3>
+          <p><strong>Calibration</strong> establishes the relationship between a reference and the
+          instrument's indication — it produces a documented comparison, nothing more. <strong>Verification</strong>
+          checks whether an instrument still meets its stated accuracy requirement. <strong>Adjustment</strong>
+          is the separate, optional act of physically changing the instrument to bring it closer to the
+          reference. An instrument can be calibrated and found out of tolerance without ever being adjusted —
+          the calibration certificate is valid either way, because its job is to document the error, not
+          eliminate it.</p>
+        </div>
+        <div>
+          <span class="note-tag info">How uncertainty actually combines</span>
+          <h3>Errors don't simply add up</h3>
+          <p>Each link in the pyramid contributes its own uncertainty, evaluated either statistically from
+          repeated readings (<strong>Type A</strong>) or from other evidence like a manufacturer datasheet
+          or calibration certificate (<strong>Type B</strong>). These contributions combine as a
+          <strong>root-sum-of-squares</strong>, not a simple sum, because independent error sources partially
+          cancel: <code>u = √(u₁² + u₂² + u₃² + …)</code>. This is why a five-link traceability chain isn't
+          five times worse than a one-link chain — but it is still worse, and every additional link between
+          a field instrument and the SI definition is one more place a documentation gap can quietly break
+          the chain.</p>
+          <ul class="field-list fault-list">
+            <li><strong>Expired calibration</strong> — the most common, and most preventable, traceability failure</li>
+            <li><strong>Undocumented "field adjustment"</strong> — breaks the paper trail even if the instrument itself is fine</li>
+            <li><strong>Wrong reference standard for the range</strong> — a reference calibrated for a different span than the DUT introduces silent extra error</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>05 — MEASUREMENT &amp; INSTRUMENTATION FUNDAMENTALS</span>
+  <span>ALL SIGNALS SIMULATED · FOR EDUCATIONAL USE</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- utility ---------------- */
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+  function fitCanvas(canvas){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const h = canvas.height; // logical height set via attribute
+    canvas.width = rect.width * dpr;
+    canvas.height = h * dpr;
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx, w: rect.width, h: h };
+  }
+
+  function drawGridBg(ctx, w, h, step){
+    ctx.save();
+    ctx.strokeStyle = 'rgba(70,224,197,0.06)';
+    ctx.lineWidth = 1;
+    for(let x=0; x<w; x+=step){
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+    }
+    for(let y=0; y<h; y+=step){
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* ---------------- status clock ---------------- */
+  const scanClock = document.getElementById('scanClock');
+  let t0 = performance.now();
+  function tickClock(){
+    const s = (performance.now()-t0)/1000;
+    scanClock.textContent = s.toFixed(1) + 's';
+    requestAnimationFrame(tickClock);
+  }
+  tickClock();
+
+  /* ================= HERO SCOPE ================= */
+  (function(){
+    const canvas = document.getElementById('heroScope');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> dims = fitCanvas(canvas));
+    let buffer = [];
+    let phase = 0;
+    function frame(){
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,28);
+      phase += 0.05;
+      const val = Math.sin(phase*1.3) * 0.35 + Math.sin(phase*0.4)*0.15 + (Math.random()-0.5)*0.05;
+      buffer.push(val);
+      if(buffer.length > 260) buffer.shift();
+      ctx.beginPath();
+      ctx.strokeStyle = '#ff9142';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ff9142';
+      ctx.shadowBlur = 6;
+      buffer.forEach((v,i)=>{
+        const x = w - (buffer.length-i) * (w/260);
+        const y = h/2 - v * (h*0.6);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      requestAnimationFrame(frame);
+    }
+    frame();
+  })();
+
+  /* ================= TT-101 RTD ================= */
+  (function(){
+    const canvas = document.getElementById('rtdCanvas');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> dims = fitCanvas(canvas));
+    const slider = document.getElementById('rtdSlider');
+    const tempLabel = document.getElementById('rtdTempLabel');
+    const ohmsOut = document.getElementById('rtdOhms');
+
+    function resistance(T){ return 100 * (1 + 0.00385*T); }
+
+    function render(){
+      const {ctx,w,h} = dims;
+      const T = parseFloat(slider.value);
+      tempLabel.textContent = T.toFixed(0);
+      const R = resistance(T);
+      ohmsOut.textContent = R.toFixed(1) + ' Ω';
+
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,30);
+
+      const padL=50, padR=20, padT=20, padB=36;
+      const plotW = w-padL-padR, plotH = h-padT-padB;
+      const Tmin=-50, Tmax=300;
+      const Rmin = resistance(Tmin), Rmax = resistance(Tmax);
+
+      // axes
+      ctx.strokeStyle = 'rgba(138,150,179,0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, h-padB); ctx.lineTo(w-padR, h-padB);
+      ctx.stroke();
+      ctx.fillStyle = '#586182';
+      ctx.font = '11px IBM Plex Mono';
+      ctx.fillText('-50°C', padL-6, h-padB+16);
+      ctx.fillText('300°C', w-padR-30, h-padB+16);
+      ctx.fillText(Rmin.toFixed(0)+'Ω', 4, h-padB);
+      ctx.fillText(Rmax.toFixed(0)+'Ω', 4, padT+8);
+
+      // curve
+      ctx.beginPath();
+      ctx.strokeStyle = '#46e0c5';
+      ctx.lineWidth = 2.5;
+      for(let i=0;i<=100;i++){
+        const t = Tmin + (Tmax-Tmin)*i/100;
+        const r = resistance(t);
+        const x = padL + plotW * (t-Tmin)/(Tmax-Tmin);
+        const y = padT + plotH * (1 - (r-Rmin)/(Rmax-Rmin));
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+
+      // current point + probe glow
+      const px = padL + plotW * (T-Tmin)/(Tmax-Tmin);
+      const py = padT + plotH * (1 - (R-Rmin)/(Rmax-Rmin));
+
+      const heat = clamp((T - Tmin)/(Tmax-Tmin), 0, 1);
+      const glowColor = `rgb(${Math.round(lerp(70,255,heat))}, ${Math.round(lerp(140,90,heat))}, ${Math.round(lerp(255,70,heat))})`;
+
+      ctx.beginPath();
+      ctx.arc(px,py,7,0,Math.PI*2);
+      ctx.fillStyle = glowColor;
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 16;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // dashed guides
+      ctx.setLineDash([3,4]);
+      ctx.strokeStyle = 'rgba(232,237,247,0.25)';
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, h-padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(px, py); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // probe icon top-right
+      const probeX = w - 70, probeY = 34;
+      ctx.beginPath();
+      ctx.roundRect(probeX-8, probeY-40, 16, 60, 8);
+      ctx.fillStyle = '#111827';
+      ctx.strokeStyle = glowColor;
+      ctx.lineWidth = 2;
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(probeX, probeY+20, 9, 0, Math.PI*2);
+      ctx.fillStyle = glowColor;
+      ctx.shadowColor = glowColor; ctx.shadowBlur = 14;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    slider.addEventListener('input', render);
+    window.addEventListener('resize', render);
+    render();
+  })();
+
+  /* ================= PT-102 LOOP GAUGE ================= */
+  (function(){
+    const canvas = document.getElementById('loopGauge');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> { dims = fitCanvas(canvas); render(); });
+    const slider = document.getElementById('loopSlider');
+    const pctLabel = document.getElementById('loopPctLabel');
+    const maOut = document.getElementById('loopMA');
+    const statusOut = document.getElementById('loopStatus');
+    const captionOut = document.getElementById('loopCaption');
+    const breakBtn = document.getElementById('breakWireBtn');
+    const restoreBtn = document.getElementById('restoreWireBtn');
+    let broken = false;
+    let displayedMA = 12;
+
+    function targetMA(){
+      if(broken) return 0;
+      const pct = parseFloat(slider.value);
+      return 4 + 0.16*pct;
+    }
+
+    function render(){
+      displayedMA = lerp(displayedMA, targetMA(), 0.18);
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,30);
+
+      pctLabel.textContent = slider.value;
+      maOut.textContent = displayedMA.toFixed(2) + ' mA';
+
+      const fault = displayedMA < 3.6;
+      statusOut.textContent = fault ? 'FAULT — BROKEN WIRE' : 'NORMAL';
+      statusOut.className = 'value ' + (fault ? 'warn' : 'ok');
+      captionOut.textContent = fault ? 'Current below 4 mA — loop integrity lost' : 'Gauge sweeps 4 mA (0%) → 20 mA (100%)';
+
+      // gauge arc
+      const cx = w/2, cy = h*0.62, radius = Math.min(w,h)*0.34;
+      const startAngle = Math.PI*0.78, endAngle = Math.PI*2.22;
+
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = 'rgba(138,150,179,0.18)';
+      ctx.beginPath();
+      ctx.arc(cx,cy,radius,startAngle,endAngle);
+      ctx.stroke();
+
+      // colored zone 4-20
+      ctx.strokeStyle = fault ? '#ff5470' : '#ff9142';
+      ctx.beginPath();
+      const frac = clamp(displayedMA/20, 0, 1);
+      ctx.arc(cx,cy,radius,startAngle, startAngle + (endAngle-startAngle)*frac);
+      ctx.stroke();
+
+      // ticks
+      ctx.fillStyle = '#8a96b3';
+      ctx.font = '11px IBM Plex Mono';
+      [0,4,8,12,16,20].forEach(v=>{
+        const a = startAngle + (endAngle-startAngle)*(v/20);
+        const tx = cx + Math.cos(a)*(radius+22);
+        const ty = cy + Math.sin(a)*(radius+22);
+        ctx.textAlign = 'center';
+        ctx.fillText(v, tx, ty);
+      });
+
+      // needle
+      const needleAngle = startAngle + (endAngle-startAngle)*frac;
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(needleAngle);
+      ctx.beginPath();
+      ctx.moveTo(-6,0);
+      ctx.lineTo(radius-14,0);
+      ctx.lineTo(-6,6);
+      ctx.closePath();
+      ctx.fillStyle = fault ? '#ff5470' : '#f7fbff';
+      ctx.shadowColor = fault ? '#ff5470' : '#ff9142';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.restore();
+      ctx.shadowBlur = 0;
+
+      ctx.beginPath();
+      ctx.arc(cx,cy,8,0,Math.PI*2);
+      ctx.fillStyle = '#e8edf7';
+      ctx.fill();
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#586182';
+      ctx.font = '11px IBM Plex Mono';
+      ctx.fillText('mA', cx, cy+radius*0.55);
+
+      requestAnimationFrame(render);
+    }
+
+    breakBtn.addEventListener('click', ()=>{
+      broken = true;
+      document.getElementById('pt102').querySelector('.panel-card').classList.add('fault-flash');
+    });
+    restoreBtn.addEventListener('click', ()=>{
+      broken = false;
+      document.getElementById('pt102').querySelector('.panel-card').classList.remove('fault-flash');
+    });
+    slider.addEventListener('input', ()=>{});
+    render();
+  })();
+
+  /* ================= LT-103 STEP RESPONSE / LAG ================= */
+  (function(){
+    const canvas = document.getElementById('lagCanvas');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> dims = fitCanvas(canvas));
+    const tauSlider = document.getElementById('tauSlider');
+    const tauLabel = document.getElementById('tauLabel');
+    const stepBtn = document.getElementById('stepBtn');
+    const trueOut = document.getElementById('trueVal');
+    const measOut = document.getElementById('measVal');
+
+    let trueVal = 40;
+    let startVal = 40;
+    let stepTime = -999;
+    let history = []; // {t, trueV, measV}
+    let clock = 0;
+
+    function currentMeasured(){
+      const tau = parseFloat(tauSlider.value);
+      const dt = clock - stepTime;
+      if(dt < 0) return startVal;
+      return trueVal - (trueVal - startVal) * Math.exp(-dt/tau);
+    }
+
+    stepBtn.addEventListener('click', ()=>{
+      startVal = currentMeasured();
+      stepTime = clock;
+      trueVal = trueVal > 50 ? 20 + Math.random()*20 : 60 + Math.random()*30;
+      history = [];
+    });
+    tauSlider.addEventListener('input', ()=> tauLabel.textContent = parseFloat(tauSlider.value).toFixed(1));
+
+    function render(){
+      clock += 1/60;
+      const measured = currentMeasured();
+      history.push({t:clock, trueV: trueVal, measV: measured});
+      if(history.length > 360) history.shift();
+
+      trueOut.textContent = trueVal.toFixed(0) + '%';
+      measOut.textContent = measured.toFixed(1) + '%';
+
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,30);
+
+      const padL=40, padR=20, padT=20, padB=30;
+      const plotW = w-padL-padR, plotH = h-padT-padB;
+      const y0 = padT, y100 = h-padB;
+      function yFor(v){ return y0 + plotH*(1 - v/100); }
+
+      ctx.strokeStyle = 'rgba(138,150,179,0.3)';
+      ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,h-padB); ctx.lineTo(w-padR,h-padB); ctx.stroke();
+
+      if(history.length > 1){
+        const tSpan = 6; // seconds window
+        const tMax = history[history.length-1].t;
+        const tMin = tMax - tSpan;
+
+        function xFor(t){ return padL + plotW * (t - tMin)/tSpan; }
+
+        // true value line
+        ctx.beginPath();
+        ctx.strokeStyle = '#ff9142';
+        ctx.lineWidth = 2;
+        let started = false;
+        history.forEach(pt=>{
+          if(pt.t < tMin) return;
+          const x = xFor(pt.t), y = yFor(pt.trueV);
+          if(!started){ ctx.moveTo(x,y); started = true; } else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+
+        // measured value line
+        ctx.beginPath();
+        ctx.strokeStyle = '#46e0c5';
+        ctx.lineWidth = 2.5;
+        started = false;
+        history.forEach(pt=>{
+          if(pt.t < tMin) return;
+          const x = xFor(pt.t), y = yFor(pt.measV);
+          if(!started){ ctx.moveTo(x,y); started = true; } else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  /* ================= AI-104 ADC / ALIASING ================= */
+  (function(){
+    const canvas = document.getElementById('aliasCanvas');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> dims = fitCanvas(canvas));
+    const fsSlider = document.getElementById('fsSlider');
+    const fsLabel = document.getElementById('fsLabel');
+    const nyquistStatus = document.getElementById('nyquistStatus');
+    const fSignal = 5; // Hz true signal
+
+    function render(){
+      const fs = parseFloat(fsSlider.value);
+      fsLabel.textContent = fs.toFixed(0);
+      const aliased = fs < 2*fSignal;
+      nyquistStatus.textContent = aliased ? 'ALIASING' : 'SAFE';
+      nyquistStatus.className = 'value ' + (aliased ? 'warn' : 'ok');
+
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,30);
+
+      const padL=20, padR=20, padT=20, padB=20;
+      const plotW = w-padL-padR, plotH = h-padT-padB;
+      const duration = 1.0; // seconds shown
+
+      function xFor(t){ return padL + plotW*(t/duration); }
+      function yFor(v){ return padT + plotH*(1 - (v+1.2)/2.4); }
+
+      // true signal
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(232,237,247,0.35)';
+      ctx.lineWidth = 1.5;
+      for(let i=0;i<=400;i++){
+        const t = duration*i/400;
+        const v = Math.sin(2*Math.PI*fSignal*t);
+        const x = xFor(t), y = yFor(v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+
+      // samples
+      const nSamples = Math.max(2, Math.round(fs*duration));
+      const samplePts = [];
+      for(let i=0;i<=nSamples;i++){
+        const t = duration*i/nSamples;
+        const v = Math.sin(2*Math.PI*fSignal*t);
+        samplePts.push({t,v});
+      }
+      ctx.fillStyle = '#ff5470';
+      samplePts.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(xFor(p.t), yFor(p.v), 4, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // reconstructed (connect the dots)
+      ctx.beginPath();
+      ctx.strokeStyle = aliased ? '#ff9142' : '#46e0c5';
+      ctx.lineWidth = 2.5;
+      samplePts.forEach((p,i)=>{
+        const x = xFor(p.t), y = yFor(p.v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  /* ================= VT-105 NOISE & FILTER ================= */
+  (function(){
+    const canvas = document.getElementById('noiseCanvas');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> dims = fitCanvas(canvas));
+    const toggle = document.getElementById('noiseToggle');
+    const filterState = document.getElementById('filterState');
+    let mode = 'raw';
+    toggle.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      mode = btn.dataset.mode;
+      [...toggle.children].forEach(b=>b.classList.toggle('active', b===btn));
+      filterState.textContent = mode === 'filtered' ? 'MOVING AVG (N=8)' : 'OFF';
+    });
+
+    let raw = [];
+    let phase = 0;
+    const N = 8;
+
+    function render(){
+      phase += 0.09;
+      const base = Math.sin(phase) * 0.4 + Math.sin(phase*2.3)*0.12;
+      const noisy = base + (Math.random()-0.5)*0.9;
+      raw.push(noisy);
+      if(raw.length > 300) raw.shift();
+
+      let series;
+      if(mode === 'filtered'){
+        series = raw.map((_,i)=>{
+          const start = Math.max(0, i-N+1);
+          const slice = raw.slice(start, i+1);
+          return slice.reduce((a,b)=>a+b,0)/slice.length;
+        });
+      } else {
+        series = raw;
+      }
+
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,26);
+
+      ctx.beginPath();
+      ctx.strokeStyle = mode==='filtered' ? '#6ee7a8' : '#ff9142';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = mode==='filtered' ? 4 : 0;
+      series.forEach((v,i)=>{
+        const x = w - (series.length-i) * (w/300);
+        const y = h/2 - v * (h*0.38);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  /* ================= FY-106 HYSTERESIS ================= */
+  (function(){
+    const canvas = document.getElementById('hystCanvas');
+    let dims = fitCanvas(canvas);
+    window.addEventListener('resize', ()=> { dims = fitCanvas(canvas); draw(); });
+    const slider = document.getElementById('hystSlider');
+    const label = document.getElementById('hystInputLabel');
+    const clearBtn = document.getElementById('hystClearBtn');
+
+    let lastVal = 0;
+    let direction = 1;
+    let risingTrace = [];
+    let fallingTrace = [];
+
+    function hystOutput(x, dir){
+      const band = 6;
+      return dir > 0 ? clamp(x - band/2, 0, 100) : clamp(x + band/2, 0, 100);
+    }
+
+    function draw(){
+      const {ctx,w,h} = dims;
+      ctx.clearRect(0,0,w,h);
+      drawGridBg(ctx,w,h,30);
+
+      const padL=40, padR=20, padT=20, padB=30;
+      const plotW=w-padL-padR, plotH=h-padT-padB;
+      function xFor(v){ return padL + plotW*v/100; }
+      function yFor(v){ return padT + plotH*(1-v/100); }
+
+      ctx.strokeStyle='rgba(138,150,179,0.3)';
+      ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,h-padB); ctx.lineTo(w-padR,h-padB); ctx.stroke();
+
+      function drawTrace(trace, color){
+        if(trace.length<2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+        trace.forEach((p,i)=>{
+          const x=xFor(p.x), y=yFor(p.y);
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+      }
+      drawTrace(risingTrace, '#ff9142');
+      drawTrace(fallingTrace, '#46e0c5');
+    }
+
+    slider.addEventListener('input', ()=>{
+      const val = parseFloat(slider.value);
+      label.textContent = val.toFixed(0);
+      direction = val >= lastVal ? 1 : -1;
+      const out = hystOutput(val, direction);
+      if(direction > 0) risingTrace.push({x:val, y:out});
+      else fallingTrace.push({x:val, y:out});
+      lastVal = val;
+      draw();
+    });
+    clearBtn.addEventListener('click', ()=>{
+      risingTrace = []; fallingTrace = [];
+      draw();
+    });
+    draw();
+  })();
+
+  /* ================= CAL-107 PYRAMID SCROLL REVEAL ================= */
+  (function(){
+    const layers = document.querySelectorAll('.pyr-layer');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const idx = [...layers].indexOf(entry.target);
+          setTimeout(()=> entry.target.classList.add('show'), idx*150);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    layers.forEach(l=> obs.observe(l));
+  })();
+
+})();
+</script>
+</body>
+</html>
