@@ -1,5 +1,7 @@
 # 05 — Measurement and Instrumentation Fundamentals
 
+[📄👾 Open Interactive Article 05](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/05-measurement-and-instrumentation-fundamentals-2.html)
+
 > **Measure the physical world. Understand the signal. Trust the information.**
 
 ---
