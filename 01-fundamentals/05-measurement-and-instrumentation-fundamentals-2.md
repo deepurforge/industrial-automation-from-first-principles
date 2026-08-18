@@ -6,7 +6,7 @@
 
 ---
 
-## . Why This Chapter Exists
+## Why This Chapter Exists ?
 
 Automation cannot control what it cannot measure. Every control decision a PLC makes — opening a valve, starting a motor, tripping an alarm — is only as good as the measurement that fed it. This chapter builds the bridge between **physical reality** and the **digital information** a control system acts on.
 
