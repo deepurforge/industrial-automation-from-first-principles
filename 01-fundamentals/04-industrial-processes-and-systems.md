@@ -1,5 +1,7 @@
 # Industrial Processes and Systems
 
+[📄👾 Open Interactive Article 03](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/04-industrial-processes-and-systems.html)
+
 > Before learning sensors, PLCs, control logic, or networks — understand the physical process those technologies are trying to control.
 
 Every chapter before this one answered a question about automation itself: what it is, where it came from, why it exists. This chapter steps back and asks something more basic, and easy to skip past without ever really answering:
