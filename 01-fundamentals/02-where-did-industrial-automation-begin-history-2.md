@@ -356,3 +356,6 @@ flowchart LR
 
 ---
 
+**Previous:** [01 — What Is Industrial Automation](01-what-is-industrial-automation.md)  
+**Next:** [03 — Why Industrial Automation Exists](03-why-industrial-automation-exists.md)
+
