@@ -255,4 +255,4 @@ This article deliberately stayed at the conceptual level. Each thread introduced
 
 ---
 
-*DeepURForge Research Notebook — Article 01 of the Industrial Automation series. Next: "02-history-and-evolution-of-industrial-automation.md"*
+**Next:** [02 — History and Evolution of Industrial Automation](02-history-and-evolution-of-industrial-automation.md)
