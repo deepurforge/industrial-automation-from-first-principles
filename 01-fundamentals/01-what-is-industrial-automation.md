@@ -1,8 +1,8 @@
 # What Is Industrial Automation?
 
-[🚀 Open Interactive Article 01](https://deepurforge.github.io/industrial-automation-from-first-principles/01-fundamentals/01-what-is-industrial-automation.html)
+[🚀 Open Interactive Article 01](https://qurvon.github.io/industrial-automation-from-first-principles/01-fundamentals/01-what-is-industrial-automation.html)
 
-> **DeepURForge Research Series — Article 01**
+> **QURVON Research Series — Article 01**
 > Foundations of Industrial Automation, built from first principles.
 > *This article answers one question only: "What is industrial automation, and what makes a system automated?" Deeper technical material (sensors, control theory, PLC internals, architecture) has its own dedicated chapters later in this series — see Section 11.*
 
