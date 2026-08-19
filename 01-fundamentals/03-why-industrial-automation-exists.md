@@ -571,3 +571,7 @@ You should now understand:
 - Wikimedia Commons — photographs credited individually above each image.
 
 ---
+
+**Previous:** [02 — History and Evolution of Industrial Automation](02-history-and-evolution-of-industrial-automation.md)  
+**Next:** [04 — Industrial Processes and Systems](04-industrial-processes-and-systems.md)
+
