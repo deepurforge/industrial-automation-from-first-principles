@@ -898,15 +898,5 @@ REAL WORLD  ↺
 
 ---
 
-## Chapter Assets
-
-This chapter's diagrams follow the repository's three-level visual strategy:
-
-- **Mermaid diagrams** — embedded directly above, rendered natively by GitHub (chain diagrams, feedback loop, troubleshooting tree).
-- **`images/` folder** — dedicated SVG assets referenced above (`measurement-hero.svg`, `industrial-measurement-map.svg`, `energy-domain-conversion.svg`, `rtd-sensor-photo.svg`, `pressure-transmitter.svg`, `radar-level-sensor.svg`, `flow-meter-comparison.svg`, `strain-gauge-bridge.svg`, `current-loop-4-20ma.svg`, `calibration-comparison.svg`) — original diagrams specific to this chapter, distinct from imagery used in other chapters of this repository.
-- **`animations/` folder** *(future work)* — interactive HTML/CSS/JS demonstrations for RTD response, 4–20 mA scaling, ADC sampling/aliasing, sensor response time, and signal filtering, hosted via GitHub Pages.
-
----
-
 **Previous:** [04 — Industrial Processes and Systems](04-industrial-processes-and-systems.md)
 **Next:** [06 — Actuators and Final Control Elements](06-actuators-and-final-control-elements.md)
