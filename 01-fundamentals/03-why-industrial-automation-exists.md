@@ -572,6 +572,6 @@ You should now understand:
 
 ---
 
-**Previous:** [02 — History and Evolution of Industrial Automation](02-history-and-evolution-of-industrial-automation.md)  
+**Previous:** [02 — where did industrial automation begin history](02-where-did-industrial-automation-begin-history-2.md)  
 **Next:** [04 — Industrial Processes and Systems](04-industrial-processes-and-systems.md)
 
