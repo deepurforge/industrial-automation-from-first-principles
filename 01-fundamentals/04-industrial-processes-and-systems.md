@@ -483,5 +483,6 @@ Chapter 05 picks up exactly where Section 11 of this chapter left off: **how do 
 ---
 
 **Previous:** [03 — Why Industrial Automation Exists](03-why-industrial-automation-exists.md)
+
 **Next:** [05 — Measurement and Instrumentation Fundamentals](05-measurement-and-instrumentation-fundamentals.md)
 
