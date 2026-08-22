@@ -1,6 +1,7 @@
 # Sensors and Transducers — How the Physical World Becomes Data
 
-[📄👾 Open Interactive Article 06](https://qurvon.github.io/industrial-automation-from-first-principles/01-fundamentals/06-sensors-and-transducers.html)
+[📄👾 Open Interactive Article 06
+(https://qurvon.github.io/industrial-automation-from-first-principles/01-fundamentals/06-sensors-and-transducers.html))
 
 > The physical world does not speak in PLC values.
 > Sensors translate physical reality into information.
